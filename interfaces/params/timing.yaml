@@ -1,0 +1,1397 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Parameter registry of LockSys: normative content of LS-SAIC-001 section 5.0.
+#
+# Rules (LS-SAIC-001 section 5.0):
+# - Keys are unique lower_snake_case. The suffix gives the unit (_ms, _us, _ma, _mv, _dv, _cdeg,
+#   _cdeg_s, _pct, _hz, _counts, _cps, _cpr, _mv_per_a, _bytes, _x1000, _level, _baud); the
+#   prefix n_ marks a count; boolean keys have no suffix.
+# - cal: true marks a bench-tuned value. In the MVP every value is a build-time constant.
+# - min/max hold the calibration range or tolerance of the Range column.
+# - lim_* keys are verification limits used by tests; they never configure product behaviour.
+# - CAN cycle times, gaps, repetitions, E2E DataIDs, MaxDelta values and RX timeouts are defined
+#   only in interfaces/can/locksys.dbc.
+#
+# Generated identifiers: C LS_<KEY> (libs/ls_common/gen/ls_params_gen.h), Python <KEY>
+# (hil/src/locksys_hil/gen/params.py), Dart LsParams.<lowerCamelKey>.
+# Regenerate with: uv run tools/codegen/regen.py
+
+version: 1
+
+groups:
+  hold_to_run:
+    title: Hold-to-run chain
+    section: "5.0.1"
+    params:
+      t_app_ka_ms:
+        value: 100
+        unit: ms
+        min: 80
+        max: 120
+        owner: [APP]
+        stage: A
+        cal: false
+        desc: WindowMove period while a press is held
+        refs: [SM-01]
+      t_app_send_max_ms:
+        value: 20
+        unit: ms
+        owner: [APP]
+        stage: A
+        cal: false
+        desc: "APP allocation: pointer event → frame handed to the socket"
+      t_app_render_max_ms:
+        value: 16
+        unit: ms
+        owner: [APP]
+        stage: A
+        cal: false
+        desc: "APP allocation: frame received → displayed"
+      t_app_press_gap_min_ms:
+        value: 200
+        unit: ms
+        owner: [APP]
+        stage: A
+        cal: false
+        desc: Minimum time between the end of a press and the next press
+      t_cgw_tick_ms:
+        value: 10
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: CGW core tick
+      t_cgw_ka_to_ms:
+        value: 350
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: Keep-alive timeout, measured from frame receipt
+        refs: [SM-02]
+      t_new_press_max_ms:
+        value: 300
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: "Maximum `hold_ms` of the first WindowMove of a press"
+      t_ping_motion_ms:
+        value: 250
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: CGW Ping period while a press is active
+      t_ping_idle_ms:
+        value: 1000
+        unit: ms
+        owner: [APP, CGW]
+        stage: A
+        cal: false
+        desc: Idle Ping period, both directions
+      t_rtt_max_ms:
+        value: 200
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: RTT gate for starting and continuing a press
+      t_pong_to_ms:
+        value: 500
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: "No Pong within this time while moving → STOP latch"
+      t_rtt_sample_max_age_ms:
+        value: 2000
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: Maximum age of the RTT sample used to admit a press
+      t_cgw_max_run_backstop_ms:
+        value: 8200
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: "CGW per-press backstop; above `t_win_max_run_ms`"
+      t_holdage_max_ms:
+        value: 400
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "Maximum `WinCmd_HoldAge` that permits motion"
+        refs: [SM-03]
+      t_dcu_task_ms:
+        value: 10
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Period of the DCU task that runs the window chain
+  window_motion:
+    title: Window motion (DCU)
+    section: "5.0.2"
+    params:
+      t_win_max_run_ms:
+        value: 8000
+        unit: ms
+        min: 1000
+        max: 15000
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: "Maximum run time per press → MAX_RUNTIME"
+      t_win_brake_ms:
+        value: 100
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Dynamic brake after a stop, then Off
+      t_win_rev_dead_ms:
+        value: 150
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Bridge Off after the brake before any new drive
+      t_softstart_ms:
+        value: 200
+        unit: ms
+        min: 0
+        max: 500
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: "Linear duty ramp from 0 to `win_duty_run_pct` at every start"
+      win_duty_run_pct:
+        value: 100
+        unit: "%"
+        min: 25
+        max: 100
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: Run duty after the ramp (stage C replaces it with speed control)
+      win_pwm_freq_hz:
+        value: 20000
+        unit: Hz
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Window and lock PWM frequency
+      enc_cpr:
+        value: 2640
+        unit: counts
+        min: 836
+        max: 3960
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: Counts per output revolution with x4 decoding
+      enc_dir_invert:
+        value: false
+        unit: bool
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: Inverts the count sign so that UP yields positive counts
+      enc_free_cps:
+        value: 7480
+        unit: counts/s
+        min: 1000
+        max: 30000
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: "Count rate at 100 % duty, 12.0 V, free running (170 rpm × 2640 / 60)"
+      t_start_grace_ms:
+        value: 250
+        unit: ms
+        min: 200
+        max: 300
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: Encoder supervision inhibited after drive-on
+      no_motion_window_ms:
+        value: 100
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Sliding window of the NO_MOTION check
+      no_motion_min_pct:
+        value: 12
+        unit: "%"
+        min: 10
+        max: 15
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: NO_MOTION when the window counts are below this share of expected
+      no_motion_duty_min_pct:
+        value: 25
+        unit: "%"
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: Encoder supervision active only at or above this duty
+      t_dir_mismatch_ms:
+        value: 100
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Window of the DIR_MISMATCH check
+      dir_mismatch_min_counts:
+        value: 20
+        unit: counts
+        min: 5
+        max: 200
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: Opposite-direction counts that qualify DIR_MISMATCH
+      i_oc_backstop_ma:
+        value: 2500
+        unit: mA
+        min: 2000
+        max: 2500
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: Filtered CS over-current backstop threshold
+      t_oc_backstop_ms:
+        value: 50
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Qualification time of the backstop
+      t_cs_blank_ms:
+        value: 100
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Backstop blanking after drive-on
+      cs_mv_per_a:
+        value: 140
+        unit: mV/A
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "VNH5019 CS gain, nominal (±19 % at 3 A)"
+      win_travel_counts:
+        value: 13200
+        unit: counts
+        min: 1000
+        max: 1000000
+        owner: [DCU]
+        stage: B
+        cal: true
+        desc: Travel between the virtual end positions
+      t_lim_debounce_ms:
+        value: 20
+        unit: ms
+        owner: [DCU]
+        stage: D
+        cal: false
+        desc: End-position switch debounce
+      t_lim_leave_ms:
+        value: 1000
+        unit: ms
+        owner: [DCU]
+        stage: D
+        cal: false
+        desc: An active end position must clear within this time when driving away
+      t_bothlim_ms:
+        value: 50
+        unit: ms
+        owner: [DCU]
+        stage: D
+        cal: false
+        desc: "Both end positions active for this time → B1A12"
+  door_lock:
+    title: Door lock
+    section: "5.0.3"
+    params:
+      t_lock_pulse_ms:
+        value: 300
+        unit: ms
+        min: 100
+        max: 500
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: Actuation pulse at 100 % duty
+      t_lock_pulse_hard_max_ms:
+        value: 500
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Hand-written cap per pulse, independent of DoorCtrl
+        refs: [SM-09]
+      t_lock_pulse_guard_ms:
+        value: 600
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: DoorCtrl model guard timer (bounded exit of the pulse state)
+      t_lock_min_stroke_ms:
+        value: 150
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: "Over-current before this time = fault; after it = end of stroke"
+      i_oc_lock_ma:
+        value: 5500
+        unit: mA
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: Lock over-current threshold
+      t_oc_lock_ms:
+        value: 20
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Qualification time of the lock over-current
+      t_lock_settle_ms:
+        value: 50
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Settle time after the pulse before the feedback check (plus debounce)
+      t_debounce_ms:
+        value: 20
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Lock position switch debounce (4 equal samples at 5 ms)
+      n_lock_max_attempts:
+        value: 2
+        unit: count
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Pulses per request
+      t_lock_retry_pause_ms:
+        value: 500
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Pause before the second pulse
+      n_lock_rate_max:
+        value: 10
+        unit: count
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Actuations allowed per rate window
+      t_lock_rate_window_ms:
+        value: 60000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Rate window
+      t_lock_fault_inhibit_ms:
+        value: 60000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Lock inhibit after B1A20
+      lock_fb_locked_level:
+        value: 0
+        unit: level
+        min: 0
+        max: 1
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: Debounced PB12 level that means LOCKED
+      act_serialise:
+        value: true
+        unit: bool
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: Window and lock never actuate at the same time (3 A supply)
+      t_cgw_door_result_to_ms:
+        value: 2500
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: "Door transaction timeout → FAILED_TIMEOUT"
+      t_cgw_door_cache_ms:
+        value: 10000
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: "Completed request results kept for repeated `request_id` (per session)"
+      t_app_door_result_to_ms:
+        value: 3000
+        unit: ms
+        owner: [APP]
+        stage: A
+        cal: false
+        desc: APP door transaction timeout
+      t_app_door_ack_hint_ms:
+        value: 1000
+        unit: ms
+        owner: [APP]
+        stage: A
+        cal: false
+        desc: "\"Waiting for vehicle\" hint when no CommandAck arrived"
+      t_app_unlock_confirm_ms:
+        value: 800
+        unit: ms
+        owner: [APP]
+        stage: A
+        cal: false
+        desc: UNLOCK hold-to-confirm time
+  supply:
+    title: Supply
+    section: "5.0.4"
+    params:
+      kl30_sense_fitted:
+        value: true
+        unit: bool
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: "KL30 sense module fitted; false = Vbat INVALID and supply interlock inactive"
+      kl30_gain_x1000:
+        value: 5000
+        unit: ratio_x1000
+        min: 4500
+        max: 5500
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: "Module input / PA4 voltage × 1000 (30 kΩ / 7.5 kΩ nominal 5.000); 2-point calibration"
+      kl30_offset_mv:
+        value: 0
+        unit: mV
+        min: -500
+        max: 500
+        owner: [DCU]
+        stage: A
+        cal: true
+        desc: Offset at the module input after calibration
+      vbat_start_min_dv:
+        value: 90
+        unit: dV
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Start window, low limit
+      vbat_start_max_dv:
+        value: 160
+        unit: dV
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Start window, high limit
+      vbat_uv_dv:
+        value: 80
+        unit: dV
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Undervoltage threshold while running
+      t_vbat_uv_ms:
+        value: 100
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Undervoltage filter
+      vbat_ov_dv:
+        value: 165
+        unit: dV
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Overvoltage threshold (an ADC reading at full scale also counts as over)
+      t_vbat_ov_ms:
+        value: 20
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Overvoltage filter
+      t_vbat_heal_ms:
+        value: 1000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Inside the start window for this time heals B1A40
+      vdda_plaus_min_mv:
+        value: 3000
+        unit: mV
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: VREFINT-derived VDDA plausibility, low
+      vdda_plaus_max_mv:
+        value: 3600
+        unit: mV
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: VDDA plausibility, high
+  temperature:
+    title: Temperature
+    section: "5.0.5"
+    params:
+      t_temp_period_ms:
+        value: 1000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: One-shot trigger period
+      t_temp_drdy_first_ms:
+        value: 130
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: First Data_Ready poll after the trigger
+      t_temp_drdy_to_ms:
+        value: 200
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "Data_Ready timeout → failed sample"
+      t_temp_id_check_ms:
+        value: 60000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Identity re-check period
+      t_tmp117_boot_ms:
+        value: 2
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "First sensor access after power-up (≥ 1.5 ms, EEPROM_Busy = 0)"
+      temp_valid_min_cdeg:
+        value: -4000
+        unit: cdeg
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Valid range, low
+      temp_valid_max_cdeg:
+        value: 12500
+        unit: cdeg
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Valid range, high
+      temp_grad_max_cdeg_s:
+        value: 500
+        unit: cdeg/s
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Maximum plausible gradient
+      n_temp_fail:
+        value: 3
+        unit: count
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "Consecutive failed samples → SENSOR_FAULT"
+      n_temp_heal:
+        value: 3
+        unit: count
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Consecutive valid samples heal B1A30 / B1A31
+      temp_inhibit_cdeg:
+        value: 8500
+        unit: cdeg
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "Over-temperature: window starts inhibited above this value"
+      temp_release_cdeg:
+        value: 8000
+        unit: cdeg
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Over-temperature released below this value
+      n_overtemp_confirm:
+        value: 2
+        unit: count
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "Samples above `temp_inhibit_cdeg` that confirm B1A32"
+      t_temp_stale_ms:
+        value: 3000
+        unit: ms
+        owner: [CGW, APP]
+        stage: A
+        cal: false
+        desc: "No temperature update for this time → STALE at the receiver"
+      temp_push_delta_cdeg:
+        value: 5
+        unit: cdeg
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: Temperature change that triggers a StatusUpdate
+      i2c_clock_hz:
+        value: 100000
+        unit: Hz
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: I2C1 clock (88 kHz fallback)
+  communication:
+    title: Communication, E2E and diagnostics
+    section: "5.0.6"
+    params:
+      n_e2e_ok_valid:
+        value: 2
+        unit: count
+        owner: [CGW, DCU]
+        stage: A
+        cal: false
+        desc: "Consecutive OK frames → VALID"
+      n_e2e_err_invalid:
+        value: 3
+        unit: count
+        owner: [CGW, DCU]
+        stage: A
+        cal: false
+        desc: "Consecutive errors → INVALID"
+      t_busoff_fast_ms:
+        value: 100
+        unit: ms
+        owner: [CGW, DCU]
+        stage: A
+        cal: false
+        desc: Fast recovery period
+      n_busoff_fast:
+        value: 5
+        unit: count
+        owner: [CGW, DCU]
+        stage: A
+        cal: false
+        desc: Fast recovery attempts
+      t_busoff_slow_ms:
+        value: 500
+        unit: ms
+        owner: [CGW, DCU]
+        stage: A
+        cal: false
+        desc: Slow recovery period
+      t_busoff_heal_ms:
+        value: 10000
+        unit: ms
+        owner: [CGW, DCU]
+        stage: A
+        cal: false
+        desc: Error-free time that resets the recovery counter and heals the bus-off DTC
+      n_ver_debounce:
+        value: 3
+        unit: count
+        owner: [CGW, DCU]
+        stage: A
+        cal: false
+        desc: "Consecutive NodeSts frames with a major mismatch → version fault"
+      t_comm_dtc_confirm_ms:
+        value: 1000
+        unit: ms
+        owner: [CGW, DCU]
+        stage: A
+        cal: false
+        desc: Confirmation time of the lost-node DTCs
+      t_wincmd_lost_dtc_ms:
+        value: 1000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: CGW_WinCmd missing for this time also sets U1A00
+      t_comm_heal_ms:
+        value: 1000
+        unit: ms
+        owner: [CGW, DCU]
+        stage: A
+        cal: false
+        desc: Frames VALID for this time heal communication and version DTCs
+      t_status_push_gap_ms:
+        value: 40
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: Minimum gap between coalesced StatusUpdate pushes
+      t_status_push_idle_ms:
+        value: 1000
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: Snapshot period while the window is idle
+      t_status_push_motion_ms:
+        value: 100
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: Snapshot period while the window moves
+      t_uds_s3_ms:
+        value: 5000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Non-default session timeout (S3)
+      t_uds_p2_ms:
+        value: 50
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: P2 server maximum
+      t_uds_p2star_ms:
+        value: 5000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "P2* server maximum"
+      t_isotp_stmin_ms:
+        value: 5
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: STmin sent in DCU flow control
+      n_isotp_bs:
+        value: 0
+        unit: count
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Block size sent in DCU flow control
+      t_isotp_n_bs_ms:
+        value: 1000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: N_Bs timeout
+      t_isotp_n_cr_ms:
+        value: 1000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: N_Cr timeout
+      isotp_max_payload_bytes:
+        value: 128
+        unit: bytes
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Maximum UDS message size
+      n_dtc_entries:
+        value: 16
+        unit: count
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: DCU fault memory entries
+      n_dtc_aging_cycles:
+        value: 40
+        unit: count
+        owner: [CGW, DCU]
+        stage: A
+        cal: false
+        desc: Operation cycles without testFailed before a confirmed DTC is cleared
+  session:
+    title: Session, WiFi and pairing
+    section: "5.0.7"
+    params:
+      t_session_to_ms:
+        value: 3000
+        unit: ms
+        owner: [APP, CGW]
+        stage: A
+        cal: false
+        desc: "No valid frame for this time → session lost (CGW closes 4004)"
+      t_cgw_handshake_to_ms:
+        value: 2000
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: Upgrade and valid ClientAuth after TCP accept
+      n_auth_fail_throttle:
+        value: 3
+        unit: count
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: Authentication failures before throttling
+      t_auth_throttle_ms:
+        value: 5000
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: Minimum time after a failure before the next verification
+      t_auth_fail_decay_ms:
+        value: 60000
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: Failure-counter decay
+      n_rate_limit_frames:
+        value: 30
+        unit: count
+        owner: [APP, CGW]
+        stage: A
+        cal: false
+        desc: "Maximum APP → CGW frames per rolling window"
+      t_rate_window_ms:
+        value: 1000
+        unit: ms
+        owner: [APP, CGW]
+        stage: A
+        cal: false
+        desc: Rolling window of the rate limit
+      ws_frame_max_bytes:
+        value: 256
+        unit: bytes
+        owner: [APP, CGW]
+        stage: A
+        cal: false
+        desc: Maximum WebSocket message size, both directions
+      n_ws_sockets_max:
+        value: 3
+        unit: count
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: "httpd `max_open_sockets`"
+      n_wifi_clients_max:
+        value: 2
+        unit: count
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: "SoftAP `max_connection`"
+      t_ap_inactive_ms:
+        value: 60000
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: SoftAP station inactivity time
+      t_ap_start_to_ms:
+        value: 3000
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: "AP start supervision; 3 failed attempts → B1B10"
+      t_pair_btn_hold_ms:
+        value: 5000
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: BOOT hold that opens the pairing window
+      t_factory_reset_hold_ms:
+        value: 10000
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: BOOT hold that performs a factory reset
+      t_boot_btn_ignore_ms:
+        value: 2000
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: BOOT ignored after boot (strapping pin)
+      t_pairing_window_ms:
+        value: 120000
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: Pairing window
+      t_app_ws_connect_to_ms:
+        value: 3000
+        unit: ms
+        owner: [APP]
+        stage: A
+        cal: false
+        desc: WebSocket connect timeout
+      t_app_reconnect_min_ms:
+        value: 500
+        unit: ms
+        owner: [APP]
+        stage: A
+        cal: false
+        desc: Reconnect backoff minimum
+      t_app_reconnect_max_ms:
+        value: 10000
+        unit: ms
+        owner: [APP]
+        stage: A
+        cal: false
+        desc: Reconnect backoff maximum
+      t_app_busy_backoff_ms:
+        value: 3000
+        unit: ms
+        owner: [APP]
+        stage: A
+        cal: false
+        desc: Minimum wait after close 4003
+      t_app_status_stale_ms:
+        value: 3000
+        unit: ms
+        owner: [APP]
+        stage: A
+        cal: false
+        desc: Effective status age above which controls are disabled
+  modes:
+    title: Modes and supervision
+    section: "5.0.8"
+    params:
+      t_init_max_ms:
+        value: 200
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: INIT completion deadline
+      t_mode_heal_ms:
+        value: 1000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "Non-latched DEGRADED causes healed for this time → NORMAL"
+      n_wdt_reset_safe:
+        value: 3
+        unit: count
+        owner: [CGW, DCU]
+        stage: A
+        cal: false
+        desc: "Watchdog or fault resets within the window → SAFE"
+      t_wdt_reset_window_ms:
+        value: 600000
+        unit: ms
+        owner: [CGW, DCU]
+        stage: A
+        cal: false
+        desc: Window of the reset counter (per power cycle)
+      n_driver_fault_safe:
+        value: 3
+        unit: count
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "VNH5019 faults within the window → SAFE"
+      t_driver_fault_window_ms:
+        value: 60000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Window of the driver-fault counter
+      t_diag_heal_ms:
+        value: 1000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: EN/DIAG high for this time allows one test actuation
+      t_win_oc_inhibit_ms:
+        value: 5000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Window inhibit after B1A16
+      t_iwdg_nom_ms:
+        value: 50
+        unit: ms
+        min: 33
+        max: 67
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: IWDG timeout (prescaler /4, reload 499)
+      t_hang_detect_ms:
+        value: 20
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "A task running longer than this → all outputs Off"
+      t_cgw_task_wdt_ms:
+        value: 2000
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: ESP-IDF task watchdog
+      t_cgw_int_wdt_ms:
+        value: 300
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: ESP-IDF interrupt watchdog
+      t_cgw_alive_deadline_ms:
+        value: 500
+        unit: ms
+        owner: [CGW]
+        stage: A
+        cal: false
+        desc: Task alive supervision deadline
+  telemetry:
+    title: Telemetry
+    section: "5.0.9"
+    params:
+      uart_baud:
+        value: 115200
+        unit: baud
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: USART2 bit rate
+      t_tlm_sta_ms:
+        value: 1000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "`$LSSTA` period"
+      t_tlm_mot_ms:
+        value: 100
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "`$LSMOT` period while the window bridge drives or brakes"
+      t_tlm_ver_ms:
+        value: 60000
+        unit: ms
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "`$LSVER` period"
+      n_log_max_per_s:
+        value: 20
+        unit: count
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: "`#LOG` lines per second"
+      tlm_ring_bytes:
+        value: 1024
+        unit: bytes
+        owner: [DCU]
+        stage: A
+        cal: false
+        desc: Telemetry transmit ring
+  verification_limits:
+    title: Verification limits
+    section: "5.0.10"
+    params:
+      lim_release_stop_ms:
+        value: 150
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-020 end to end
+        refs: [SYS-020]
+      lim_release_stop_appsim_ms:
+        value: 130
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-020 with the APP simulator (APP send allocation subtracted)
+        refs: [SYS-020]
+      lim_release_stop_cgw_ms:
+        value: 25
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: "SYS-020 component check: CGW TRACE0 (WindowStop) → bridge Off"
+        refs: [SYS-020]
+      lim_ka_loss_stop_ms:
+        value: 400
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-021
+        refs: [SYS-021]
+      lim_can_loss_stop_ms:
+        value: 130
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-022
+        refs: [SYS-022]
+      lim_dcu_hang_off_ms:
+        value: 100
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-023
+        refs: [SYS-023]
+      lim_door_transition_ms:
+        value: 300
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-024
+        refs: [SYS-024]
+      lim_door_final_ms:
+        value: 1000
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-024
+        refs: [SYS-024]
+      lim_door_final_retry_ms:
+        value: 2000
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-024
+        refs: [SYS-024]
+      lim_door_transition_appsim_ms:
+        value: 264
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-024 with the APP simulator (send and render allocations subtracted)
+        refs: [SYS-024]
+      lim_door_final_appsim_ms:
+        value: 964
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-024 with the APP simulator
+        refs: [SYS-024]
+      lim_door_final_retry_appsim_ms:
+        value: 1964
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-024 with the APP simulator
+        refs: [SYS-024]
+      lim_status_push_ms:
+        value: 50
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-025
+        refs: [SYS-025]
+      lim_can_cycle_tol_pct:
+        value: 10
+        unit: "%"
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-026
+        refs: [SYS-026]
+      lim_bus_load_pct:
+        value: 10
+        unit: "%"
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-026
+        refs: [SYS-026]
+      lim_oc_stop_ms:
+        value: 100
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-031
+        refs: [SYS-031]
+      lim_e2e_stop_ms:
+        value: 70
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-037
+        refs: [SYS-037]
+      lim_safe_entry_ms:
+        value: 200
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-038
+        refs: [SYS-038]
+      lim_no_motion_stop_ms:
+        value: 110
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-042
+        refs: [SYS-042]
+      lim_dir_mismatch_stop_ms:
+        value: 110
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-042
+        refs: [SYS-042]
+      lim_kl30_accuracy_mv:
+        value: 200
+        unit: mV
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-043
+        refs: [SYS-043]
+      lim_busoff_resume_ms:
+        value: 1000
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-063
+        refs: [SYS-063]
+      lim_reset_glitch_us:
+        value: 10
+        unit: us
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-036
+        refs: [SYS-036]
+      lim_init_normal_ms:
+        value: 300
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-072
+        refs: [SYS-072]
+      lim_ap_up_ms:
+        value: 3000
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-072
+        refs: [SYS-072]
+      lim_cpu_load_pct:
+        value: 60
+        unit: "%"
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-070
+        refs: [SYS-070]
+      lim_stack_pct:
+        value: 75
+        unit: "%"
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-070
+        refs: [SYS-070]
+      lim_cgw_heap_free_pct:
+        value: 30
+        unit: "%"
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-070
+        refs: [SYS-070]
+      lim_temp_period_tol_ms:
+        value: 50
+        unit: ms
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-008, SYS-009
+        refs: [SYS-008, SYS-009]
+      lim_uart_jitter_us:
+        value: 50
+        unit: us
+        owner: [SYS]
+        stage: A
+        cal: false
+        desc: SYS-090
+        refs: [SYS-090]
+      lim_virtual_limit_stop_ms:
+        value: 10
+        unit: ms
+        owner: [SYS]
+        stage: B
+        cal: false
+        desc: SYS-006 (virtual end positions)
+        refs: [SYS-006]
+      lim_physical_limit_stop_ms:
+        value: 5
+        unit: ms
+        owner: [SYS]
+        stage: D
+        cal: false
+        desc: SYS-006 (end-position switches)
+        refs: [SYS-006]

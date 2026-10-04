@@ -1,0 +1,72 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Include rules of the DCU layered architecture (LS-DCU-SAD-001 section 3), checked by
+# tools/arch/check_layers.py. Paths are relative to the repository root.
+#
+# groups:   ordered; a file belongs to the first group whose glob matches. In a glob, "{module}"
+#           matches one directory name and names the module of the file.
+# allow:    groups a group may include. "<group>" allows every module of that group,
+#           "<group>:<m1>,<m2>" only the named modules, "<group>:own" only the same module.
+# Includes with angle brackets of standard headers are always allowed.
+
+version: 1
+
+sources:
+  - firmware/dcu/src
+  - firmware/dcu/cfg
+
+include_roots:
+  - firmware/dcu/src
+  - firmware/dcu/cfg
+  - firmware/dcu/gen
+  - libs/ls_common/include
+  - libs/ls_common/gen
+  - libs/ls_e2e/include
+  - third_party/cmsis_core-5.9.0/CMSIS/Core/Include
+  - third_party/cmsis_device_f1-4.3.5/Include
+
+std_headers: [stdbool.h, stddef.h, stdint.h, string.h, limits.h, intrinsics.h]
+
+groups:
+  - {name: platform, glob: "firmware/dcu/src/platform/*"}
+  - {name: mcal, glob: "firmware/dcu/src/mcal/{module}/*"}
+  - {name: ecual, glob: "firmware/dcu/src/ecual/{module}/*"}
+  - {name: services, glob: "firmware/dcu/src/services/{module}/*"}
+  - {name: rte_view, glob: "firmware/dcu/src/rte/rte_{module}.h"}
+  - {name: rte, glob: "firmware/dcu/src/rte/*"}
+  - {name: swc, glob: "firmware/dcu/src/app/{module}/*"}
+  - {name: main, glob: "firmware/dcu/src/main.c"}
+  - {name: cfg_common, glob: "firmware/dcu/cfg/ls_cfg.h"}
+  - {name: cfg, glob: "firmware/dcu/cfg/{module}/*"}
+  - {name: gen, glob: "firmware/dcu/gen/*"}
+  - {name: gen_vs, glob: "firmware/dcu/gen_vs/{module}/*"}
+  - {name: libs, glob: "libs/{module}/**"}
+  - {name: cmsis, glob: "third_party/cmsis_*/**"}
+
+allow:
+  platform: [platform, cmsis]
+  mcal: [platform, cmsis, cfg_common, "cfg:mcal", "mcal:own"]
+  ecual: [platform, "mcal", cfg_common, "cfg:mcal,ecual", libs, "ecual:own"]
+  services: [platform, "mcal:clk,crc,dma,nvic,pwr,stk,uart,wdg", ecual, services, cfg_common,
+             "cfg:services", libs, gen]
+  rte_view: [rte_view, rte, libs, platform]
+  rte: [platform, rte, rte_view, services, ecual, libs, gen, cfg_common]
+  swc: [platform, "rte_view:own", libs, cfg_common, "swc:own", gen_vs]
+  main: [services, platform]
+  cfg_common: [platform]
+  cfg: [platform, cfg_common, cfg, mcal, ecual, services, rte, rte_view, swc, libs, gen]
+
+# Register headers (CMSIS device and core) are confined to these groups.
+register_header_groups: [platform, mcal]
+
+# "*_priv.h" headers may be included only from the same directory.
+private_header_suffix: _priv.h
+
+# Object declarations with "extern" (not functions, not const) are allowed only here.
+extern_object_groups: [rte, gen, gen_vs]
+extern_object_files: [firmware/dcu/src/platform/ls_compiler.h]
+
+# A generated Visual State system header may be included only by its own SWC, at most one per
+# translation unit. The system name maps to the SWC directory.
+vs_systems: {WinCtrl: win_ctrl, DoorCtrl: door_ctrl, ModeMgr: mode_mgr}

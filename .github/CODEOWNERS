@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Code owners. The last matching pattern takes precedence. Sensitive paths are listed
+# explicitly so that ownership survives a change of the default rule.
+
+*                                        @jlurg
+
+# Safety-relevant firmware, shared libraries and interface contracts
+/firmware/dcu/                           @jlurg
+/firmware/cgw/                           @jlurg
+/libs/                                   @jlurg
+/interfaces/                             @jlurg
+/third_party/                            @jlurg
+
+# Generators, toolchain pins and quality gates
+/tools/codegen/                          @jlurg
+/tools/versions.env                      @jlurg
+/tools/ci/                               @jlurg
+/firmware/dcu/cstat/                     @jlurg
+/docs/08_process/misra/                  @jlurg
+
+# CI/CD, repository governance and the self-hosted runner host
+/.github/                                @jlurg
+/tools/github/                           @jlurg
+/tools/labhost/                          @jlurg
+/tools/git/                              @jlurg
+
+# Safety and security concepts, AI-assistant rules
+/docs/05_safety/                         @jlurg
+/docs/06_security/                       @jlurg
+/SECURITY.md                             @jlurg
+/.claude/                                @jlurg
+/CLAUDE.md                               @jlurg

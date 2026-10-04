@@ -1,0 +1,54 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+# https://editorconfig.org
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{yml,yaml,json,toml,dart,arb}]
+indent_size = 2
+
+[{.clang-format,.clang-tidy,.markdownlint-cli2.yaml}]
+indent_size = 2
+
+[*.{sh,bash}]
+indent_size = 2
+
+[*.{bat,cmd,ps1,psm1,psd1}]
+end_of_line = crlf
+
+[*.{eww,ewp,ewd,ewt}]
+end_of_line = crlf
+trim_trailing_whitespace = false
+insert_final_newline = unset
+
+[*.md]
+indent_size = 2
+trim_trailing_whitespace = false
+
+[*.tsv]
+indent_style = tab
+
+[{Makefile,*.mk}]
+indent_style = tab
+
+[firmware/dcu/model/visualstate/**]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+indent_style = unset
+indent_size = unset
+
+[{**/gen/**,firmware/dcu/gen_vs/**,third_party/**}]
+trim_trailing_whitespace = unset
+insert_final_newline = unset
+indent_style = unset
+indent_size = unset

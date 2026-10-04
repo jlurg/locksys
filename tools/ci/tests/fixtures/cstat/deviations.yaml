@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Test fixture for tools/ci/cstat_gate.py (same schema as docs/08_process/misra/deviations.yaml).
+
+schema_version: 1
+deviations:
+  - id: DEV-DCU-001
+    kind: deviation
+    guideline: "MISRA C:2012 Rule 11.4"
+    category: advisory
+    cstat_tag: MISRAC2012-Rule-11.4
+    scope:
+      paths:
+        - firmware/dcu/src/mcal/**
+    rationale: "Register access through CMSIS peripheral pointers."
+    risk: "Misaligned or invalid peripheral address."
+    mitigation: "Addresses come from the device header only."
+    verification: "Code review; register fakes in unit tests."
+    approved_by: jlurg
+    date: 2026-10-03
+    status: approved
+  - id: DEV-DCU-002
+    kind: deviation
+    guideline: "MISRA C:2012 Rule 10.4"
+    category: required
+    cstat_tag: [MISRAC2012-Rule-10.4_*]
+    approved_by: jlurg
+    date: 2026-10-03
+    status: approved
+  - id: DEV-DCU-003
+    kind: deviation
+    guideline: "MISRA C:2012 Rule 15.5"
+    category: advisory
+    cstat_tag: MISRAC2012-Rule-15.5
+    approved_by: jlurg
+    date: 2026-10-03
+    status: proposed
+  - id: DP-01
+    kind: permit
+    guideline: "MISRA C:2012 Rule 11.4"
+    category: advisory
+    cstat_tag: MISRAC2012-Rule-11.4
+    scope:
+      paths:
+        - firmware/dcu/src/mcal/**
+    approved_by: jlurg
+    date: 2026-10-03
+    status: approved

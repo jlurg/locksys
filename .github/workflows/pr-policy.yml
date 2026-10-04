@@ -1,0 +1,98 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Pull-request policy. Required check: pr-policy (docs/08_process/ci_cd.md).
+# PR data is read through the API with a read-only token and reaches the scripts only
+# through environment variables and files. The policy scripts are taken from the base
+# commit, so a pull request cannot relax the rules it is checked against.
+name: pr-policy
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-policy-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-policy:
+    name: pr-policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Check out the policy scripts of the base commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+          sparse-checkout: tools/git
+      - name: Branch name, base/head pair, title and linked issue
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          TITLE: ${{ github.event.pull_request.title }}
+          BODY: ${{ github.event.pull_request.body }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          printf '%s' "$BODY" > "$RUNNER_TEMP/pr-body.txt"
+          python3 tools/git/conventions.py --format github pr \
+            --base "$BASE_REF" --head "$HEAD_REF" --title "$TITLE" \
+            --author "$AUTHOR" --body-file "$RUNNER_TEMP/pr-body.txt"
+      - name: No AI attribution (commits, identities, title, body)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TITLE: ${{ github.event.pull_request.title }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          messages="$RUNNER_TEMP/messages.txt"
+          identities="$RUNNER_TEMP/identities.txt"
+          gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" \
+            --jq '.[] | .commit.message' > "$messages"
+          gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" \
+            --jq '.[] | .commit.author.name, .commit.author.email,
+                        .commit.committer.name, .commit.committer.email,
+                        (.author.login // empty), (.committer.login // empty)' > "$identities"
+          printf '%s\n%s\n' "$TITLE" "$BODY" >> "$messages"
+          echo "Scanned $(wc -l < "$identities") identity entries"
+          python3 tools/git/ai_attribution.py --messages "$messages" --identities "$identities"
+
+  size-label:
+    name: size-label
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # Best effort: tokens of Dependabot and fork pull requests are read-only.
+    continue-on-error: true
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Apply the size label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Changed lines without generated code, vendored code and lock files.
+          changed=$(gh api --paginate "repos/$GH_REPO/pulls/$PR_NUMBER/files" \
+            --jq '.[] | select(.filename | test("(^|/)(gen|gen_vs)/|^third_party/|(^|/)(uv|pubspec|dependencies)\\.lock$") | not)
+                  | .additions + .deletions' | awk '{ total += $1 } END { print total + 0 }')
+          if [ "$changed" -lt 10 ]; then size=XS
+          elif [ "$changed" -lt 100 ]; then size=S
+          elif [ "$changed" -lt 400 ]; then size=M
+          elif [ "$changed" -lt 800 ]; then size=L
+          else size=XL
+          fi
+          echo "Changed lines: $changed -> size/$size"
+          while read -r label; do
+            if [ -n "$label" ] && [ "$label" != "size/$size" ]; then
+              gh pr edit "$PR_NUMBER" --remove-label "$label"
+            fi
+          done < <(gh pr view "$PR_NUMBER" --json labels --jq '.labels[].name | select(startswith("size/"))')
+          gh pr edit "$PR_NUMBER" --add-label "size/$size"

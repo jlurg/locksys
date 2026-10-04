@@ -1,0 +1,60 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+name: Requirement change
+description: Add, modify or delete stakeholder, system, hardware or software requirements.
+title: "Requirement change: "
+labels: ["type:requirement"]
+body:
+  - type: input
+    id: ids
+    attributes:
+      label: Requirement IDs
+      placeholder: SYS-021, SWR-DCU-042 (or "new")
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current text
+      render: text
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed text
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Rationale
+    validations:
+      required: true
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: Impact analysis
+      description: Tick every affected item and describe the impact below.
+      options:
+        - label: System requirements (SYS)
+        - label: Software or hardware requirements (SWR, HWR)
+        - label: Tests (unit, integration, HIL, manual)
+        - label: Interfaces (CAN, protocol, telemetry, YAML)
+        - label: Safety concept (HAZ, SG, SM)
+        - label: Security concept (TS, CSG, CSR)
+  - type: textarea
+    id: impact-details
+    attributes:
+      label: Impact details
+    validations:
+      required: true
+  - type: dropdown
+    id: version-impact
+    attributes:
+      label: Interface version impact
+      options:
+        - None
+        - Minor (additive)
+        - Major (incompatible)
+    validations:
+      required: true

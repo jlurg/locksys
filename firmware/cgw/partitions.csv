@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# CGW partition table, 8 MB flash (LS-CGW-SAD-001 section 13.2). CONFIG_PARTITION_TABLE_OFFSET is
+# 0x11000: room for a 64 KB Secure Boot v2 bootloader plus its signature sector. nvs_keys and
+# efuse_em are reserved for LATER hardening; 0x660000-0x7FFFFF is spare. No factory partition.
+# Name,   Type, SubType,  Offset,   Size,     Flags
+nvs,      data, nvs,      0x12000,  0x6000,
+otadata,  data, ota,      0x18000,  0x2000,
+nvs_keys, data, nvs_keys, 0x1A000,  0x1000,   encrypted
+efuse_em, data, efuse,    0x1B000,  0x2000,
+ota_0,    app,  ota_0,    0x20000,  0x300000,
+ota_1,    app,  ota_1,    0x320000, 0x300000,
+coredump, data, coredump, 0x620000, 0x40000,

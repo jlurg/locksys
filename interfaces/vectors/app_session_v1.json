@@ -1,0 +1,296 @@
+{
+  "version": 1,
+  "source": "LS-SAIC-001 v0.2 sections 8.2, 8.3 and 8.6",
+  "generator": "tools/codegen/vectors.py: Python hmac/hashlib, RFC 5869 HKDF, hand-encoded proto3",
+  "note": "Each frame is an independent example. Handshake frames (counter 0) carry an empty tag. Bodies are canonical proto3 encodings in field-number order; fixed-length bytes fields are always present, as nanopb encodes them.",
+  "inputs": {
+    "k_pair": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+    "device_id": "0102030405060708",
+    "server_nonce": "101112131415161718191a1b1c1d1e1f",
+    "client_nonce": "202122232425262728292a2b2c2d2e2f",
+    "client_id": "303132333435363738393a3b3c3d3e3f"
+  },
+  "labels": {
+    "client_proof": "4c5376317c636c69",
+    "server_proof": "4c5376317c737276",
+    "session": "4c5376317c73657373696f6e"
+  },
+  "directions": {
+    "app_to_cgw": 65,
+    "cgw_to_app": 67
+  },
+  "tag_length": 16,
+  "client_proof": "1160faa48fbf464cb8cd77f1d0408080f735e4554fbd8c8397120ae618950f99",
+  "server_proof": "4a1567ac13dc8410db9924ea4a6d68f93a9b73e2ad1ca5d3ccca2dedc5f22dc4",
+  "hkdf": {
+    "ikm": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+    "salt": "101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f",
+    "info": "4c5376317c73657373696f6e0102030405060708303132333435363738393a3b3c3d3e3f",
+    "length": 32,
+    "prk": "3dba9ce7b37931cdb631d1fc48a4ff9efd4c7af090a8658433c6df65f58be639",
+    "okm": "6e2205fa6bf18b9f8a05ba93e0268d83cce903289407e3fadb56a776780e499f"
+  },
+  "k_sess": "6e2205fa6bf18b9f8a05ba93e0268d83cce903289407e3fadb56a776780e499f",
+  "frames": [
+    {
+      "name": "server_hello",
+      "direction": "cgw_to_app",
+      "counter": 0,
+      "body_member": "server_hello",
+      "fields": {
+        "proto": [
+          1,
+          0
+        ],
+        "device_id": "0102030405060708",
+        "server_nonce": "101112131415161718191a1b1c1d1e1f",
+        "fw_version": "0.1.0-dev+a1b2c3d",
+        "com_matrix": [
+          1,
+          0
+        ],
+        "pairing_window_open": false
+      },
+      "body": "0a370a020801120801020304050607081a10101112131415161718191a1b1c1d1e1f2211302e312e302d6465762b613162326333642a020801",
+      "tag": "",
+      "frame": "12390a370a020801120801020304050607081a10101112131415161718191a1b1c1d1e1f2211302e312e302d6465762b613162326333642a020801"
+    },
+    {
+      "name": "client_auth",
+      "direction": "app_to_cgw",
+      "counter": 0,
+      "body_member": "client_auth",
+      "fields": {
+        "proto": [
+          1,
+          0
+        ],
+        "client_id": "303132333435363738393a3b3c3d3e3f",
+        "client_nonce": "202122232425262728292a2b2c2d2e2f",
+        "client_proof": "1160faa48fbf464cb8cd77f1d0408080f735e4554fbd8c8397120ae618950f99",
+        "app_version": "0.1.0"
+      },
+      "body": "12510a0208011210303132333435363738393a3b3c3d3e3f1a10202122232425262728292a2b2c2d2e2f22201160faa48fbf464cb8cd77f1d0408080f735e4554fbd8c8397120ae618950f992a05302e312e30",
+      "tag": "",
+      "frame": "125312510a0208011210303132333435363738393a3b3c3d3e3f1a10202122232425262728292a2b2c2d2e2f22201160faa48fbf464cb8cd77f1d0408080f735e4554fbd8c8397120ae618950f992a05302e312e30"
+    },
+    {
+      "name": "auth_result_ok",
+      "direction": "cgw_to_app",
+      "counter": 1,
+      "body_member": "auth_result",
+      "fields": {
+        "result": "COMMAND_RESULT_OK",
+        "server_proof": "4a1567ac13dc8410db9924ea4a6d68f93a9b73e2ad1ca5d3ccca2dedc5f22dc4",
+        "session_id": 305419896,
+        "session_timeout_ms": 3000,
+        "keepalive_period_ms": 100,
+        "keepalive_timeout_ms": 350
+      },
+      "body": "1a32080112204a1567ac13dc8410db9924ea4a6d68f93a9b73e2ad1ca5d3ccca2dedc5f22dc418f8acd1910120b817286430de02",
+      "tag": "10bffe38f4667e06dccd9446aae43d87",
+      "frame": "080112341a32080112204a1567ac13dc8410db9924ea4a6d68f93a9b73e2ad1ca5d3ccca2dedc5f22dc418f8acd1910120b817286430de021a1010bffe38f4667e06dccd9446aae43d87"
+    },
+    {
+      "name": "auth_result_rejected",
+      "direction": "cgw_to_app",
+      "counter": 0,
+      "body_member": "auth_result",
+      "fields": {
+        "result": "COMMAND_RESULT_REJECTED_AUTH",
+        "server_proof": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "body": "1a24080b12200000000000000000000000000000000000000000000000000000000000000000",
+      "tag": "",
+      "frame": "12261a24080b12200000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "name": "ping_after_auth",
+      "direction": "cgw_to_app",
+      "counter": 2,
+      "body_member": "ping",
+      "fields": {
+        "timestamp_ms": 1000
+      },
+      "body": "220308e807",
+      "tag": "e181c70bd5abaf865929121059a9bda3",
+      "frame": "08021205220308e8071a10e181c70bd5abaf865929121059a9bda3"
+    },
+    {
+      "name": "window_move_first",
+      "direction": "app_to_cgw",
+      "counter": 1,
+      "body_member": "window_move",
+      "fields": {
+        "press_id": 1,
+        "direction": "WINDOW_DIRECTION_UP",
+        "hold_ms": 0
+      },
+      "body": "5a0408011001",
+      "tag": "9a8bb35b86289aaa442691d8d8ef5b19",
+      "frame": "080112065a04080110011a109a8bb35b86289aaa442691d8d8ef5b19"
+    },
+    {
+      "name": "window_move_keepalive",
+      "direction": "app_to_cgw",
+      "counter": 2,
+      "body_member": "window_move",
+      "fields": {
+        "press_id": 1,
+        "direction": "WINDOW_DIRECTION_UP",
+        "hold_ms": 100
+      },
+      "body": "5a06080110011864",
+      "tag": "dc652e49d4a56b55874e2762568dd7e8",
+      "frame": "080212085a060801100118641a10dc652e49d4a56b55874e2762568dd7e8"
+    },
+    {
+      "name": "window_stop",
+      "direction": "app_to_cgw",
+      "counter": 3,
+      "body_member": "window_stop",
+      "fields": {
+        "press_id": 1
+      },
+      "body": "62020801",
+      "tag": "a722e591b17be2d30b94c432b002c4d9",
+      "frame": "08031204620208011a10a722e591b17be2d30b94c432b002c4d9"
+    },
+    {
+      "name": "door_command_unlock",
+      "direction": "app_to_cgw",
+      "counter": 4,
+      "body_member": "door_command",
+      "fields": {
+        "request_id": 1,
+        "action": "DOOR_ACTION_UNLOCK"
+      },
+      "body": "520408011002",
+      "tag": "992221f90289f54bc95060d51a6230aa",
+      "frame": "080412065204080110021a10992221f90289f54bc95060d51a6230aa"
+    },
+    {
+      "name": "status_request",
+      "direction": "app_to_cgw",
+      "counter": 5,
+      "body_member": "status_request",
+      "fields": {},
+      "body": "6a00",
+      "tag": "43be7cd47d8443e882ad8729a154faf3",
+      "frame": "080512026a001a1043be7cd47d8443e882ad8729a154faf3"
+    },
+    {
+      "name": "pong",
+      "direction": "cgw_to_app",
+      "counter": 2,
+      "body_member": "pong",
+      "fields": {
+        "echo_timestamp_ms": 1000
+      },
+      "body": "2a0308e807",
+      "tag": "4daf856ed6c48677e1a72a67be07c98e",
+      "frame": "080212052a0308e8071a104daf856ed6c48677e1a72a67be07c98e"
+    },
+    {
+      "name": "command_ack_accepted",
+      "direction": "cgw_to_app",
+      "counter": 3,
+      "body_member": "command_ack",
+      "fields": {
+        "kind": "COMMAND_KIND_WINDOW",
+        "ref_id": 1,
+        "result": "COMMAND_RESULT_ACCEPTED"
+      },
+      "body": "a20106080210011802",
+      "tag": "2ad2139c6336e62e8741f9be57e75cb6",
+      "frame": "08031209a201060802100118021a102ad2139c6336e62e8741f9be57e75cb6"
+    },
+    {
+      "name": "door_command_result_ok",
+      "direction": "cgw_to_app",
+      "counter": 4,
+      "body_member": "door_command_result",
+      "fields": {
+        "request_id": 1,
+        "result": "COMMAND_RESULT_OK",
+        "lock_state": "DOOR_LOCK_STATE_UNLOCKED"
+      },
+      "body": "aa0106080110011802",
+      "tag": "080804f35bdbf729f28e51503d4194a5",
+      "frame": "08041209aa01060801100118021a10080804f35bdbf729f28e51503d4194a5"
+    },
+    {
+      "name": "status_update_negative_values",
+      "direction": "cgw_to_app",
+      "counter": 5,
+      "body_member": "status_update",
+      "fields": {
+        "seq": 7,
+        "door_lock_state": "DOOR_LOCK_STATE_LOCKED",
+        "window_state": "WINDOW_STATE_MOVING_UP",
+        "window_position_pct": 255,
+        "temperature_cdeg": -1234,
+        "temp_status": "TEMP_STATUS_VALID",
+        "dcu_mode": "NODE_MODE_NORMAL",
+        "cgw_mode": "NODE_MODE_NORMAL",
+        "dcu_alive": true,
+        "vbat_dv": 124,
+        "status_age_ms": 85,
+        "last_door_request_id": 1,
+        "last_door_result": "COMMAND_RESULT_OK",
+        "window_fault_flags": 257,
+        "window_speed_rpm_x10": -1698,
+        "window_encoder_status": "ENCODER_STATUS_OK"
+      },
+      "body": "b2012808071001180220ff0130a3133801400248026001687c7055780180010190018102a001c31aa80101",
+      "tag": "f551535eb8f3db6a8bf4e40237b89864",
+      "frame": "0805122bb2012808071001180220ff0130a3133801400248026001687c7055780180010190018102a001c31aa801011a10f551535eb8f3db6a8bf4e40237b89864"
+    },
+    {
+      "name": "notice_ka_timeout",
+      "direction": "cgw_to_app",
+      "counter": 6,
+      "body_member": "notice",
+      "fields": {
+        "severity": "FAULT_SEVERITY_WARNING",
+        "code": 1,
+        "text": "Keep-alive timeout"
+      },
+      "body": "ba0118080110011a124b6565702d616c6976652074696d656f7574",
+      "tag": "d8495157da127d23a5a4466453428626",
+      "frame": "0806121bba0118080110011a124b6565702d616c6976652074696d656f75741a10d8495157da127d23a5a4466453428626"
+    },
+    {
+      "name": "session_close_timeout",
+      "direction": "cgw_to_app",
+      "counter": 7,
+      "body_member": "session_close",
+      "fields": {
+        "reason": "COMMAND_RESULT_FAILED_TIMEOUT"
+      },
+      "body": "c201020809",
+      "tag": "1bfa94c6280627d5731844dfc7a648b2",
+      "frame": "08071205c2010208091a101bfa94c6280627d5731844dfc7a648b2"
+    }
+  ],
+  "negative": [
+    {
+      "name": "tag_with_wrong_direction",
+      "description": "Body of window_move_first (counter 1) tagged with dir 0x43; must not verify as APP -> CGW",
+      "direction_used": "cgw_to_app",
+      "counter": 1,
+      "body": "5a0408011001",
+      "tag": "4f792c9bbf369001b40ed5b2c67ed10c",
+      "expect": "reject"
+    },
+    {
+      "name": "counter_mismatch",
+      "description": "Tag of window_move_first presented with counter 2; must not verify",
+      "direction_used": "app_to_cgw",
+      "counter": 2,
+      "body": "5a0408011001",
+      "tag": "9a8bb35b86289aaa442691d8d8ef5b19",
+      "expect": "reject"
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+
+# Operating systems and editors
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.cache/
+
+# Build outputs (CMake, Ceedling, ESP-IDF, Flutter)
+build/
+/out/
+CMakeUserPresets.json
+/compile_commands.json
+
+# IAR Embedded Workbench (anchored: core.ignorecase would otherwise match hil/)
+firmware/dcu/iar/settings/
+firmware/dcu/iar/Debug/
+firmware/dcu/iar/Release/
+firmware/dcu/iar/Hil/
+firmware/dcu/out/
+*.dep
+**/C-STAT/
+BrowseInfo/
+
+# IAR Visual State (GUI state and reports; models and generated code are committed)
+*.vsviewinfo
+*.vsgaviewinfo
+firmware/dcu/model/visualstate/reports/
+firmware/dcu/model/visualstate/**/*.vtg
+
+# Generated at build time (not committed)
+**/ls_build_info_gen.h
+**/ls_version_gen.h
+tools/codegen/.protoc/
+
+# ESP-IDF
+sdkconfig
+sdkconfig.old
+managed_components/
+
+# Flutter and Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.fvm/
+**/android/key.properties
+**/android/local.properties
+**/android/.gradle/
+**/ios/Pods/
+**/ios/.symlinks/
+xcuserdata/
+*.jks
+*.keystore
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+*.egg-info/
+
+# Node (markdownlint and other npm tools)
+node_modules/
+
+# Documentation builds
+docs/_build/
+
+# HIL evidence and local bench configuration (evidence goes to release assets)
+hil/reports/
+hil/evidence/
+hil/config/**/*.local.yaml
+hil/bench/*.local.yaml
+hil/bench/secrets/
+*.sal
+
+# Secrets and local settings
+.env
+.env.*
+*.pem
+*.p12
+*.pfx
+.claude/settings.local.json
+CLAUDE.local.md

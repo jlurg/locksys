@@ -1,0 +1,151 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Quality limits used by tools/ci/{coverage_gate,complexity_gate,cstat_gate}.py.
+# Single source of truth for coverage, complexity and C-STAT gate settings
+# (decision L-8). Scopes are evaluated in order; a file belongs to the first
+# scope whose glob matches its repository-relative path.
+# A scope with 'enforce: false' is reported in CI but never fails the gate.
+
+version: 1
+
+coverage:
+  components:
+    libs:
+      exclude: ['**/test/**', '**/build/**', '**/gen/**']
+      scopes:
+        - name: ls_e2e
+          paths: ['libs/ls_e2e/src/**']
+          line: 100
+          branch: 100
+          required: true
+        - name: ls_common-safety
+          paths: ['libs/ls_common/src/ls_{crc,evset,tmr}*.c']
+          line: 100
+          branch: 100
+        - name: ls_common
+          paths: ['libs/ls_common/src/**']
+          line: 95
+          branch: 90
+
+    dcu:
+      # Report-only until the M1 exit (DCU platform code and its unit tests).
+      enforce: false
+      exclude: ['**/test/**', '**/build/**', 'firmware/dcu/gen/**', 'libs/**', 'third_party/**']
+      scopes:
+        - name: guards
+          paths: ['firmware/dcu/src/app/win_ctrl/win_ctrl_guards.c', 'firmware/dcu/src/app/cmd_arb/**']
+          line: 100
+          branch: 100
+        - name: safety-swc
+          # Safety-related code (LS-VER-001 section 6, LS-SAF-001 section 7.2). Module
+          # directories: SWCs in lower_snake, ECUAL and services in lowercase prefix form.
+          paths:
+            - 'firmware/dcu/src/app/{win_ctrl,door_ctrl,mode_mgr,temp_mon}/**'
+            - 'firmware/dcu/src/services/{safemon,wdgm,ecum,com}/**'
+            - 'firmware/dcu/src/ecual/{hbridge,winpos,lockact,vbatmon,canif}/**'
+          line: 95
+          branch: 90
+        - name: vs-generated
+          paths: ['firmware/dcu/gen_vs/release/**']
+          line: 95
+        - name: dcu-other
+          paths: ['firmware/dcu/src/**', 'firmware/dcu/cfg/**']
+          line: 85
+          branch: 75
+
+    cgw:
+      # Report-only until the M3 exit.
+      enforce: false
+      exclude: ['**/test/**', '**/build/**', '**/gen/**', 'libs/**', 'third_party/**']
+      scopes:
+        - name: cgw-safety
+          paths: ['firmware/cgw/components/cgw_{arbiter,com,session}/**']
+          line: 95
+          branch: 90
+        - name: cgw-core
+          paths: ['firmware/cgw/components/**', 'firmware/cgw/main/**']
+          line: 90
+          branch: 80
+
+    app:
+      # Report-only until the M4 exit.
+      enforce: false
+      exclude: ['**/gen/**', '**/*.g.dart', '**/*.pb*.dart', '**/l10n/**']
+      scopes:
+        - name: locksys_protocol
+          paths: ['app/packages/locksys_protocol/lib/**']
+          line: 95
+          branch: 90
+        - name: domain
+          paths: ['app/lib/**/domain/**']
+          line: 95
+          branch: 85
+        - name: app-other
+          paths: ['app/lib/**']
+          line: 85
+
+    python:
+      # Report-only until the M2 exit.
+      enforce: false
+      exclude: ['**/tests/**', '**/unit/**', '**/gen/**']
+      scopes:
+        - name: codegen
+          paths: ['tools/codegen/**']
+          line: 80
+        - name: ci-gates
+          paths: ['tools/ci/**']
+          line: 80
+        - name: hil
+          paths: ['hil/src/**']
+          line: 80
+
+# Memory budgets of the firmware images, evaluated on the linked image of the GCC shadow
+# build (dcu-gcc) and of the IAR Release build. flash = text + data (load image);
+# ram = data + bss, including the reserved stack and the noinit section.
+size:
+  dcu:
+    # Report-only until the M1 exit (LS-VER-001 section 7).
+    enforce: false
+    device: STM32F103RB
+    memories:
+      flash:
+        capacity_bytes: 131072
+        max_percent: 75
+      ram:
+        capacity_bytes: 20480
+        max_percent: 60
+
+complexity:
+  languages: [c]
+  paths:
+    - firmware/dcu/src
+    - firmware/dcu/cfg
+    - libs/ls_e2e/src
+    - libs/ls_common/src
+    - firmware/cgw/components
+    - firmware/cgw/main
+  exclude: ['*/gen/*', '*/gen_vs/*', '*/test/*', '*/build/*']
+  limits:
+    ccn:
+      warn_above: 10
+      fail_above: 15
+    parameters:
+      fail_above: 5
+    nloc:
+      warn_above: 50
+    nesting:
+      warn_above: 4
+
+cstat:
+  deviation_id_pattern: 'DEV-(?:DCU|CGW|LIB)-[0-9]{3}|DP-[0-9]{2}'
+  # Approved records with these prefixes must be referenced by a suppression.
+  referenced_prefixes: [DEV-DCU-, DEV-LIB-]
+  approved_statuses: [approved]
+  # Suppression directives are forbidden in generated code (regeneration drops them).
+  generated_path_pattern: '(^|/)gen(_vs)?/'
+  source_extensions: ['.c', '.h']
+  compiler_version_key: IAR_EWARM_BASELINE
+  forbidden_symbols:
+    all: ['^(malloc|calloc|realloc|free)$']
+    release: ['^Fi_', '^FaultInj_']

@@ -1,0 +1,12 @@
+LockSys
+Copyright (c) 2026 jlurg
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This product includes third-party software. The components, their licenses
+and the notices they require are listed in THIRD_PARTY_NOTICES.md:
+
+- CMSIS-Core 5.9.0, Copyright (c) Arm Limited (Apache-2.0)
+- STM32F1 CMSIS device headers v4.3.5, Copyright (c) STMicroelectronics (Apache-2.0)
+- nanopb 0.4.9.2, Copyright (c) 2011 Petteri Aimonen (Zlib)
+- QR Code generator library (C) 1.8.0, Copyright (c) Project Nayuki (MIT)

@@ -1,0 +1,79 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+name: HIL failure
+description: A failed or erroneous HIL run that needs classification.
+title: "HIL failure: "
+labels: ["type:hil-failure"]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Classify within 2 days. Paste the result summary: workflow runs and artefacts are
+        deleted after 90 days.
+  - type: input
+    id: run
+    attributes:
+      label: Workflow run URL
+      placeholder: https://github.com/jlurg/locksys/actions/runs/...
+    validations:
+      required: true
+  - type: input
+    id: sha
+    attributes:
+      label: Commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: suite
+    attributes:
+      label: Suite
+      options:
+        - smoke
+        - regression
+        - nightly
+        - soak
+        - real (attended)
+    validations:
+      required: true
+  - type: input
+    id: tests
+    attributes:
+      label: Test IDs
+      placeholder: TST-HIL-SYS-001
+    validations:
+      required: true
+  - type: input
+    id: bench
+    attributes:
+      label: Bench configuration hash
+      description: SHA-256 of the bench configuration used by the run.
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Not yet classified
+        - Product defect
+        - Bench defect
+        - Infrastructure (runner, network, host)
+        - Flaky test
+    validations:
+      required: true
+  - type: dropdown
+    id: reproducibility
+    attributes:
+      label: Reproducibility
+      options:
+        - Always
+        - Intermittent
+        - Once
+        - Not yet re-run
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Result summary
+      render: text
+    validations:
+      required: true

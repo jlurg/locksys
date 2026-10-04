@@ -1,0 +1,24 @@
+signal,dcu_pin,access_point,stimulus_function,configuration,notes
+ENC_A,PA15,Morpho CN7-17,Quadrature output,SIM,Real encoder unplugged; 5 V-tolerant pin
+ENC_B,PB3,Top D3 socket,Quadrature output,SIM,5 V-tolerant pin
+WIN_PWM,PC7,Top D9 socket,Timer input capture,SIM and REAL,20 kHz
+WIN_INA,PA10,Top D2 socket,GPIO input,SIM and REAL,
+WIN_INB,PB5,Top D4 socket,GPIO input,SIM and REAL,
+LOCK_PWM,PB6,Top D10 socket,Timer input capture,SIM and REAL,
+LOCK_INA,PA8,Top D7 socket,GPIO input,SIM and REAL,
+LOCK_INB,PA9,Top D8 socket,GPIO input,SIM and REAL,
+WIN_CS,PA0,Top A0 socket,DAC channel 1,SIM,Disabled while DCU 3V3 < 3.0 V
+LOCK_CS,PA1,Top A1 socket,DAC channel 2,SIM,Disabled while DCU 3V3 < 3.0 V
+WIN_EN_DIAG,PB10,Top D6 socket,Open-drain output (5 V-tolerant pin),SIM,Shield pulls to 5 V through 4.7 kOhm + 1 kOhm
+LOCK_EN_DIAG,PB4 (B) or PA6 (A),Top D5 or D12 socket,Open-drain output (5 V-tolerant pin),SIM,Per the shield option chosen in M1
+LOCK_POS,PB12,Morpho CN10-16,Output (lock plant model),SIM,Real switch unplugged
+I2C_SCL,PB8,Top SCL socket,I2C target 0x48,SIM,Pull-ups from a second TMP117 board at 0x49
+I2C_SDA,PB9,Top SDA socket,I2C target 0x48,SIM,
+DCU_NRST,NRST,Morpho CN7-14,Open-drain output,SIM and REAL,
+DCU_3V3,3V3,Top 3V3 socket,ADC input,SIM and REAL,Back-powering guard
+KL30_SENSE,PA4,Top A2 socket,ADC input,SIM and REAL,SYNC at threshold crossings
+CGW_EN,EN,DevKitC J1-3,Open-drain output,SIM and REAL,
+CGW_BOOT,GPIO0,DevKitC J3-14,Open-drain output with interlock,SIM and REAL,Never low while EN is released or at power-up
+SYNC,-,Logic analyser D0,Width-coded timer output,SIM and REAL,10/20/50/100/200 us codes
+CAN_SHORT,-,Relay module input,GPIO output,SIM,Optional relay module
+GND,GND,Top GND socket and morpho GND,Common reference,SIM and REAL,No motor return current on these wires

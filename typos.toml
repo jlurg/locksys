@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Spell checking of identifiers and prose (crate-ci/typos). British and American spellings
+# are both accepted.
+
+[files]
+extend-exclude = [
+  "**/gen/**",
+  "**/gen_vs/**",
+  "third_party/**",
+  "*.lock",
+  "*.dbc",
+  "*.ewp",
+  "*.eww",
+  "*.ewd",
+  "*.ewt",
+  "*.svg",
+  # Xcode-generated project files (random object identifiers)
+  "*.storyboard",
+  "*.xib",
+  "*.pbxproj",
+  "interfaces/vectors/*.json",
+  "firmware/dcu/model/visualstate/**",
+  "LICENSE",
+]
+
+[default]
+extend-ignore-re = [
+  # Hexadecimal byte sequences, register values and digests
+  "\\b0x[0-9A-Fa-f]+\\b",
+  "\\b[0-9A-Fa-f]{2}( [0-9A-Fa-f]{2})+\\b",
+  "\\bsha256:[0-9a-f]{64}\\b",
+  # DBC attribute keywords (BA_, BA_DEF_, BA_DEF_DEF_, BA_DEF_REL_, ...)
+  "\\bBA_(?:[A-Z]+_)*",
+]
+
+[default.extend-words]
+# STM32 high-speed internal oscillator (HSI, HSI64 clock profile)
+hsi = "hsi"
+
+[default.extend-identifiers]

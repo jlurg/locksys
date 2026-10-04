@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# C style for firmware/ and libs/. Generated (gen/, gen_vs/) and vendored (third_party/)
+# code is excluded by the pre-commit configuration. Requires clang-format 16 or later.
+---
+Language: Cpp
+BasedOnStyle: LLVM
+ColumnLimit: 100
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+BreakBeforeBraces: Allman
+InsertBraces: true                      # MISRA C:2012 Rule 15.6
+InsertNewlineAtEOF: true
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AlignConsecutiveMacros: Consecutive
+AlignEscapedNewlines: Left
+AlignTrailingComments: true
+IndentCaseLabels: true
+IndentPPDirectives: None
+MaxEmptyLinesToKeep: 1
+PointerAlignment: Right
+ReflowComments: false                   # keeps Doxygen tables and register maps intact
+SortIncludes: Never                     # include order is significant in embedded code
+SpaceBeforeParens: ControlStatements
+...

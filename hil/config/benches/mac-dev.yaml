@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Portable developer subset on macOS: fake supply and stimulus, virtual CAN. It exercises the
+# bench fixture, lock and safe state without hardware; catalogue tests skip for the missing
+# capabilities.
+schema_version: 1
+name: mac-dev
+configuration: SIM
+lock_file: ~/.cache/locksys-hil/bench.lock
+evidence_dir: hil/reports
+capabilities: [can, psu.kl30, stimulus]
+can:
+  interface: virtual
+  channel: locksys
+psu:
+  driver: fake
+  resource: fake
+stimulus:
+  driver: fake

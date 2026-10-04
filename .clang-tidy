@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# clang-tidy for host builds and the GCC shadow build compile database. Headers are analysed
+# only for LockSys sources; generated and vendored headers are outside HeaderFilterRegex.
+---
+Checks: >-
+  -*,
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  misc-*,
+  readability-braces-around-statements,
+  readability-implicit-bool-conversion,
+  -bugprone-easily-swappable-parameters,
+  -misc-include-cleaner
+WarningsAsErrors: >-
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*
+HeaderFilterRegex: '.*/(firmware/dcu/(src|cfg)|firmware/cgw/(main|components/[a-z0-9_]+/(include|priv_include|src))|libs/[a-z0-9_]+/(include|src))/.*'
+FormatStyle: file
+CheckOptions:
+  - key: readability-braces-around-statements.ShortStatementLines
+    value: '0'
+  - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: 'false'
+  - key: readability-implicit-bool-conversion.AllowIntegerConditions
+    value: 'false'
+...

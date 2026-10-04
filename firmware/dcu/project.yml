@@ -1,0 +1,91 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Ceedling 1.1.9 host unit tests of the DCU firmware (tests in test/, register fakes and host
+# core registers in test/support/).
+# Run: tools/docker/ceedling/run.sh firmware/dcu test:all   (coverage: gcov:all)
+# CI: tools/ci/ceedling_ci.sh dcu firmware/dcu; thresholds in tools/ci/quality_gates.yaml.
+---
+:project:
+  :build_root: build
+  :test_file_prefix: test_
+  :use_mocks: TRUE
+  :use_test_preprocessor: :none
+  :use_backtrace: :none
+  :default_tasks:
+    - test:all
+
+:paths:
+  :test:
+    - +:test/**
+    - -:test/support
+  :support:
+    - test/support
+  :source:
+    - src/**
+    - cfg/**
+  :include:
+    - test/support
+    - src
+    - cfg
+    - gen
+    - src/**
+    - cfg/**
+    - ../../libs/ls_common/include
+    - ../../libs/ls_common/gen
+    - ../../libs/ls_e2e/include
+
+:defines:
+  :test:
+    - LS_HOST_TEST
+    - STM32F103xB
+    - LS_CFG_DET=1
+    - LS_CFG_FI=1
+    - LS_CFG_TRACE=1
+    - LS_CFG_TRCOV=1
+    - LS_CFG_ROMCRC_ENFORCE=0
+
+:cmock:
+  :mock_prefix: mock_
+  :when_no_prototypes: :warn
+  :enforce_strict_ordering: TRUE
+  :plugins:
+    - :ignore
+    - :ignore_arg
+    - :expect_any_args
+    - :return_thru_ptr
+
+:flags:
+  :test:
+    :compile:
+      :*:
+        - -std=c11
+        - -Wall
+        - -Wextra
+        - -Wconversion
+        - -Wshadow
+        - -Wstrict-prototypes
+        - -Werror
+        # CMSIS headers are system headers: their host-width casts are not diagnosed.
+        - -isystem ../../third_party/cmsis_core-5.9.0/CMSIS/Core/Include
+        - -isystem ../../third_party/cmsis_device_f1-4.3.5/Include
+
+:plugins:
+  :enabled:
+    - report_tests_pretty_stdout
+    - gcov
+
+# Coverage: gcovr JSON at build/artifacts/gcov/gcovr/GcovCoverage.json, paths relative to this
+# directory (read by tools/ci/coverage_gate.py; DCU scopes are report-only until M1 exit).
+:gcov:
+  :summaries: TRUE
+  :reports:
+    - JSON
+    - HtmlDetailed
+  :gcovr:
+    :report_root: "."
+    :exclude:
+      - "^test/.*"
+      - "^gen/.*"
+      - "^build/.*"
+...

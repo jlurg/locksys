@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Line endings: LF everywhere; Windows-native scripts and IAR project files use CRLF.
+# Both machines use core.autocrlf=false. No Git LFS: binaries and evidence go to releases.
+
+* text=auto eol=lf
+
+# Windows-native files
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+*.psm1 text eol=crlf
+*.psd1 text eol=crlf
+
+# IAR Embedded Workbench project files (rewritten by the IDE)
+*.eww text eol=crlf
+*.ewp text eol=crlf
+*.ewd text eol=crlf
+*.ewt text eol=crlf
+
+# CAN database: ASCII only, LF (enforced by the dbc-ascii hook)
+*.dbc text eol=lf
+
+# IAR Visual State models: exact bytes, no textual merges (one editor per file)
+firmware/dcu/model/visualstate/**/*.vs[prt] -text merge=binary diff
+firmware/dcu/model/visualstate/**/*.vssm    -text merge=binary diff
+firmware/dcu/model/visualstate/**/*.vste    -text merge=binary diff
+firmware/dcu/model/visualstate/**/*.vnw     -text merge=binary diff
+firmware/dcu/model/visualstate/**/*.vws     -text merge=binary
+firmware/dcu/model/visualstate/**/*.vxlg    -text merge=binary
+
+# Generated code (committed, never edited by hand)
+**/gen/**                   linguist-generated=true
+firmware/dcu/gen_vs/**      text eol=lf linguist-generated=true
+uv.lock                     linguist-generated=true
+app/pubspec.lock            linguist-generated=true
+firmware/cgw/dependencies.lock linguist-generated=true
+
+# Vendored code
+third_party/** linguist-vendored=true
+
+# Binary files
+*.bin   binary
+*.elf   binary
+*.emf   binary
+*.gif   binary
+*.ico   binary
+*.jar   binary
+*.jpeg  binary
+*.jpg   binary
+*.pdf   binary
+*.png   binary
+*.sal   binary
+*.ttf   binary
+*.webp  binary
+*.woff2 binary
+*.zip   binary

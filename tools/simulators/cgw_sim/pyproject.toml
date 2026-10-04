@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# CGW simulator: WebSocket server implementing the APP <-> CGW protocol 1.0 (LS-SAIC-001
+# section 8) for APP development and integration tests. Member of the root uv workspace.
+
+[build-system]
+requires = ["hatchling==1.32.4"]
+build-backend = "hatchling.build"
+
+[project]
+name = "locksys-cgw-sim"
+dynamic = ["version"]
+description = "LockSys CGW simulator: APP protocol 1.0 WebSocket server with session security and command handling."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  # Session cryptography and the generated protobuf stubs are shared with the HIL APP simulator.
+  "locksys-hil",
+  "protobuf==6.33.6",
+  "websockets==17.1",
+]
+
+[project.scripts]
+locksys-cgw-sim = "locksys_cgw_sim.__main__:main"
+
+[tool.hatch.version]
+path = "../../../VERSION"
+pattern = "^(?P<version>\\S+)\\s*$"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/locksys_cgw_sim"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/locksys_cgw_sim"]

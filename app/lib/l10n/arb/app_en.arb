@@ -1,0 +1,71 @@
+{
+  "@@locale": "en",
+  "appTitle": "LockSys",
+  "bannerUnpaired": "Not paired",
+  "bannerConnecting": "Connecting…",
+  "bannerAuthenticating": "Authenticating…",
+  "bannerConnected": "Connected",
+  "bannerDegraded": "Door unit offline",
+  "bannerReconnecting": "Connection lost. Reconnecting…",
+  "bannerBlocked": "Connection blocked",
+  "bannerDisconnected": "Paused",
+  "bannerConnect": "Connect",
+  "doorLocked": "Locked",
+  "doorUnlocked": "Unlocked",
+  "doorLocking": "Locking…",
+  "doorUnlocking": "Unlocking…",
+  "doorFault": "Lock fault",
+  "doorUnknown": "Lock state unknown",
+  "doorLockAction": "Lock",
+  "doorUnlockAction": "Hold to unlock",
+  "doorPending": "Waiting for the door…",
+  "windowTitle": "Window",
+  "windowCloseLabel": "Close",
+  "windowOpenLabel": "Open",
+  "holdToMoveHint": "Press and hold to move the window. Release to stop.",
+  "windowPositionUnknown": "Position unknown",
+  "windowPositionOpen": "{percent} % open",
+  "@windowPositionOpen": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "windowStateName": "State: {state}",
+  "@windowStateName": {
+    "placeholders": {
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "windowStopReason": "Stopped: {reason}",
+  "@windowStopReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "temperatureTitle": "Cabin temperature",
+  "temperatureValue": "{value} °C",
+  "@temperatureValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "temperatureStatus": "Unavailable ({status})",
+  "@temperatureStatus": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "pairingTitle": "Pair with the vehicle",
+  "pairingInstructions": "Hold the BOOT button of the gateway until its LED blinks blue, then scan the QR code printed on its console.",
+  "diagnosticsTitle": "Diagnostics"
+}

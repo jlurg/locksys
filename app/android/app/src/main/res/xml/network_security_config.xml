@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright (c) 2026 jlurg -->
+<!-- Cleartext is refused for platform network stacks. The ws:// link to the CGW SoftAP uses a
+     dart:io socket, which this policy does not govern (LS-SAIC-001 section 8.12). -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

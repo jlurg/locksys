@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# markdownlint-cli2 configuration (pre-commit hook and CI lint job).
+config:
+  default: true
+  MD013: false                # line length: prose is not wrapped at a fixed width
+  MD024:
+    siblings_only: true       # repeated section names in CHANGELOG releases
+  MD033:
+    allowed_elements: [br, details, summary, sub, sup, kbd, img, a, p, picture, source]
+  MD036: false                # bold lead-in labels are used as paragraph titles
+  MD041: false                # templates and generated files start without a level-1 heading
+  MD060: false                # table pipe alignment is not enforced
+
+ignores:
+  - "**/gen/**"
+  - "**/gen_vs/**"
+  - "third_party/**"
+  - "**/node_modules/**"
+  - "**/build/**"
+  - "**/.dart_tool/**"
+  - "firmware/cgw/managed_components/**"
+  - "CODE_OF_CONDUCT.md"     # Contributor Covenant text kept verbatim

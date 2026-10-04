@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<System Name="WinCtrl">
+  <Event Name="SE_RESET"/>
+  <Event Name="evTick"/>
+  <Event Name="evReqUp"/>
+  <ActionFunction Name="aTr"/>
+  <ActionFunction Name="aBridgeBrake"/>
+  <Variable Name="xRunOk"/>
+  <Constant Name="kRevDeadMs" Value="150"/>
+  <Transition Name="W1" Action="aTr(kTrW1); aBridgeBrake()"/>
+  <Transition Name="W2">
+    <Action>aTr(kTrW2)</Action>
+  </Transition>
+</System>

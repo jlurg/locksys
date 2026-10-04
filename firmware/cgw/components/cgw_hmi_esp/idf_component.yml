@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Managed dependencies of cgw_hmi_esp; exact pins, resolved versions recorded in
+# firmware/cgw/dependencies.lock.
+dependencies:
+  idf: ">=5.5.5,<5.6"
+  espressif/led_strip: "==3.0.3"

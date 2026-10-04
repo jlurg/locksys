@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# actionlint configuration (actionlint 1.7.12; read from .github/actionlint.yaml).
+self-hosted-runner:
+  # Custom labels of the Lab Host runners labhost-iar and labhost-hil.
+  labels:
+    - iar
+    - hil
+
+# Repository variables referenced by workflows (docs/08_process/github_settings.md).
+config-variables:
+  - HIL_BENCH_STATE
+  - TRUSTED_ACTORS
+
+paths:
+  .github/workflows/hil.yml:
+    ignore:
+      # concurrency.queue is valid GitHub Actions syntax that actionlint 1.7.12 does not know yet.
+      - 'unexpected key "queue" for "concurrency" section'

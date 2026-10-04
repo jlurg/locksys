@@ -1,0 +1,483 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# DTC and notice catalogue of LockSys: normative content of LS-SAIC-001 sections 8.9 and 13.
+#
+# Encoding (LS-SAIC-001 section 13.1): a DTC is 3 bytes, the SAE J2012 two-byte code followed
+# by the failure type byte (FTB); bits 15-14 of the code encode the letter (P 00, C 01, B 10,
+# U 11). DCU codes use B1Axx/U1Axx, CGW codes B1Bxx/U1Bxx. FTB values follow common SAE J2012-DA
+# usage and are UNVERIFIED (LS-SAIC-001 O9).
+#
+# DTC fields: code, value (24 bits), node, stage (DCU; stage_note qualifies it), name,
+# severity (FaultSeverity; critical_at_reset_limit: the reset-limit escalation of section 6.1;
+# severity_later: severity in later window stages), inhibit (DCU: target none, window,
+# window_dir, lock, window_lock or safe; release heal, timeout, test_after or clear; time as a
+# parameter key or in ms; later: inhibit of later window stages), detection, reaction, healing.
+# Notice fields: code (< 0x010000), name, severity, meaning.
+#
+# Generated: libs/ls_common/gen/ls_dtc_gen.h (DTC and notice codes), firmware/dcu/gen/dem_dtc_gen.{h,c}
+# (DCU Dem table), hil/src/locksys_hil/gen/dtc.py.
+# Regenerate with: uv run tools/codegen/regen.py
+
+version: 1
+
+status:
+  availability_mask: 0x2D
+  bits: {test_failed: 0, pending: 2, confirmed: 3, test_failed_since_last_clear: 5}
+
+dtcs:
+  - code: B1A10-96
+    value: 0x9A1096
+    node: DCU
+    stage: A
+    name: Window bridge fault
+    severity: DEGRADED
+    inhibit:
+      target: window
+      release: test_after
+      time: t_diag_heal_ms
+    detection: "Window EN/DIAG low, or bridge output readback mismatch; immediate"
+    reaction: "Reflex Off, latch, DRIVER_FAULT; counts toward `n_driver_fault_safe`"
+    healing: Test drive without fault
+  - code: B1A11-71
+    value: 0x9A1171
+    node: DCU
+    stage: A
+    name: "Window motion not detected (NO_MOTION: stall, open motor circuit or encoder failure)"
+    severity: WARNING
+    inhibit:
+      target: none
+    detection: "§5.3"
+    reaction: "Brake; STALL; BLOCKED; press latched"
+    healing: Next press passes the supervision
+  - code: B1A12-64
+    value: 0x9A1264
+    node: DCU
+    stage: D
+    name: End-position plausibility
+    severity: CRITICAL
+    inhibit:
+      target: safe
+    detection: "Both end positions active ≥ `t_bothlim_ms`, or an active end position not cleared within `t_lim_leave_ms`"
+    reaction: "Off; SAFE"
+    healing: Power-on reset
+  - code: B1A13-92
+    value: 0x9A1392
+    node: DCU
+    stage: A
+    name: Maximum run time exceeded
+    severity: WARNING
+    severity_later: {B: DEGRADED, D: DEGRADED}
+    inhibit:
+      target: none
+      later: "B, D: window_dir until an end position is reached"
+    detection: "Driving ≥ `t_win_max_run_ms` within one press"
+    reaction: "Brake; MAX_RUNTIME; press latched"
+    healing: "A: next press; B, D: end position reached"
+  - code: B1A14-13
+    value: 0x9A1413
+    node: DCU
+    stage: LATER
+    name: Window motor open circuit (current-based)
+    severity: DEGRADED
+    inhibit:
+      target: window
+      release: test_after
+      time: 5000
+    detection: "Requires CS calibration; stage A reports an open circuit as B1A11"
+    reaction: "—"
+    healing: Drive with current
+  - code: B1A15-64
+    value: 0x9A1564
+    node: DCU
+    stage: A
+    name: Window encoder direction mismatch (DIR_MISMATCH)
+    severity: DEGRADED
+    inhibit:
+      target: window
+      release: clear
+    detection: "§5.3"
+    reaction: "Brake; DIR_MISMATCH; WindowState FAULT"
+    healing: UDS 0x14 or power-on reset
+  - code: B1A16-19
+    value: 0x9A1619
+    node: DCU
+    stage: A
+    name: Window over-current backstop
+    severity: WARNING
+    inhibit:
+      target: window
+      release: timeout
+      time: t_win_oc_inhibit_ms
+    detection: "Filtered CS > `i_oc_backstop_ma` for `t_oc_backstop_ms`, from `t_cs_blank_ms` after drive-on"
+    reaction: "Brake; OVERCURRENT"
+    healing: Next press without over-current
+  - code: B1A20-71
+    value: 0x9A2071
+    node: DCU
+    stage: A
+    name: "Lock: no feedback"
+    severity: DEGRADED
+    inhibit:
+      target: lock
+      release: timeout
+      time: t_lock_fault_inhibit_ms
+    detection: "Switch ≠ target after `n_lock_max_attempts`"
+    reaction: "FAILED_ACTUATOR; LockState FAULT"
+    healing: Next transaction OK
+  - code: B1A21-96
+    value: 0x9A2196
+    node: DCU
+    stage: A
+    name: Lock bridge fault
+    severity: DEGRADED
+    inhibit:
+      target: lock
+      release: test_after
+      time: t_diag_heal_ms
+    detection: "Lock EN/DIAG low, or over-current before `t_lock_min_stroke_ms`"
+    reaction: "Off; FAILED_ACTUATOR; counts toward `n_driver_fault_safe`"
+    healing: Test actuation without fault
+  - code: B1A22-98
+    value: 0x9A2298
+    node: DCU
+    stage: A
+    name: Lock rate limit reached
+    severity: WARNING
+    inhibit:
+      target: lock
+      release: heal
+    detection: "Request beyond `n_lock_rate_max` actuations within `t_lock_rate_window_ms`"
+    reaction: REJECTED_RATE_LIMIT
+    healing: A rate slot is free
+  - code: B1A30-96
+    value: 0x9A3096
+    node: DCU
+    stage: A
+    name: Temperature sensor communication or identity
+    severity: DEGRADED
+    inhibit:
+      target: none
+      note: the VNH5019 thermal shutdown remains the backstop
+    detection: "`n_temp_fail` consecutive failed samples, or ID ≠ 0x0117"
+    reaction: "SENSOR_FAULT; raw ID logged"
+    healing: "`n_temp_heal` valid samples"
+  - code: B1A31-64
+    value: 0x9A3164
+    node: DCU
+    stage: A
+    name: Temperature implausible
+    severity: WARNING
+    inhibit:
+      target: none
+    detection: "Outside the valid range, or gradient > `temp_grad_max_cdeg_s`"
+    reaction: OUT_OF_RANGE or IMPLAUSIBLE
+    healing: "`n_temp_heal` valid samples"
+  - code: B1A32-98
+    value: 0x9A3298
+    node: DCU
+    stage: A
+    name: ECU over-temperature
+    severity: DEGRADED
+    inhibit:
+      target: window
+      release: heal
+    detection: "`n_overtemp_confirm` samples above `temp_inhibit_cdeg`"
+    reaction: "OVERTEMP stop; starts rejected"
+    healing: "Below `temp_release_cdeg`"
+  - code: B1A40-16
+    value: 0x9A4016
+    node: DCU
+    stage: A
+    stage_note: sense fitted
+    name: KL30 below threshold, or VDDA implausible
+    severity: DEGRADED
+    inhibit:
+      target: window_lock
+      release: heal
+    detection: "< `vbat_uv_dv` for `t_vbat_uv_ms`; VDDA outside `vdda_plaus_min_mv`…`vdda_plaus_max_mv`"
+    reaction: UNDERVOLTAGE stop
+    healing: "Inside the start window for `t_vbat_heal_ms`"
+  - code: B1A40-17
+    value: 0x9A4017
+    node: DCU
+    stage: A
+    stage_note: sense fitted
+    name: KL30 above threshold
+    severity: DEGRADED
+    inhibit:
+      target: window_lock
+      release: heal
+    detection: "> `vbat_ov_dv`, or ADC at full scale, for `t_vbat_ov_ms`"
+    reaction: OVERVOLTAGE stop
+    healing: "Inside the start window for `t_vbat_heal_ms`"
+  - code: B1A50-45
+    value: 0x9A5045
+    node: DCU
+    stage: A
+    name: ROM CRC failure
+    severity: CRITICAL
+    inhibit:
+      target: safe
+    detection: Start-up or background mismatch
+    reaction: SAFE
+    healing: None
+  - code: B1A51-44
+    value: 0x9A5144
+    node: DCU
+    stage: A
+    name: Stack or RAM integrity
+    severity: CRITICAL
+    inhibit:
+      target: safe
+    detection: Stack canary corrupted
+    reaction: SAFE
+    healing: None
+  - code: B1A52-47
+    value: 0x9A5247
+    node: DCU
+    stage: A
+    name: Watchdog reset
+    severity: WARNING
+    critical_at_reset_limit: true
+    inhibit:
+      target: none
+    detection: ResetReason WATCHDOG at start-up
+    reaction: "Logged; counts toward `n_wdt_reset_safe`"
+    healing: Aging
+  - code: B1A53-96
+    value: 0x9A5396
+    node: DCU
+    stage: A
+    name: HSE or CSS failure
+    severity: CRITICAL
+    inhibit:
+      target: safe
+    detection: HSE not ready at start-up, or CSS NMI
+    reaction: HSI64 profile, SAFE, CAN silent
+    healing: Power-on reset
+  - code: B1A54-48
+    value: 0x9A5448
+    node: DCU
+    stage: A
+    name: Software exception (HardFault, BusFault, UsageFault)
+    severity: WARNING
+    critical_at_reset_limit: true
+    inhibit:
+      target: none
+    detection: Fault record found in noinit RAM after reset
+    reaction: "Logged with PC and CFSR (DID 0xFD05); counts toward `n_wdt_reset_safe`"
+    healing: Aging
+  - code: B1A55-48
+    value: 0x9A5548
+    node: DCU
+    stage: A
+    name: State-machine engine error (DTC_SWC_FSM_ERROR)
+    severity: CRITICAL
+    inhibit:
+      target: safe
+    detection: A Visual State engine call returns an error code (contradiction, range error, signal queue full)
+    reaction: "Affected actuator braked or Off without the engine; FAULT; SAFE"
+    healing: None
+  - code: U1A00-87
+    value: 0xDA0087
+    node: DCU
+    stage: A
+    name: Lost communication with the CGW
+    severity: DEGRADED
+    inhibit:
+      target: window
+      release: heal
+    detection: "CGW_NodeSts missing > 500 ms, or CGW_WinCmd missing > `t_wincmd_lost_dtc_ms`; confirmed after `t_comm_dtc_confirm_ms`"
+    reaction: DEGRADED
+    healing: "Both frames VALID for `t_comm_heal_ms`"
+  - code: U1A01-88
+    value: 0xDA0188
+    node: DCU
+    stage: A
+    name: CAN bus-off
+    severity: DEGRADED
+    inhibit:
+      target: none
+      note: "no valid command during bus-off; re-arm afterwards"
+    detection: Bus-off state
+    reaction: "Window brake then Off, lock Off; recovery per §7.6"
+    healing: "`t_busoff_heal_ms` without errors"
+  - code: U1A02-82
+    value: 0xDA0282
+    node: DCU
+    stage: A
+    name: E2E alive-counter errors
+    severity: WARNING
+    inhibit:
+      target: none
+    detection: "`n_e2e_err_invalid` consecutive sequence or repetition errors"
+    reaction: "Frame INVALID; window STOP (E2E_ERROR)"
+    healing: VALID again
+  - code: U1A02-83
+    value: 0xDA0283
+    node: DCU
+    stage: A
+    name: E2E CRC or DataID errors
+    severity: WARNING
+    inhibit:
+      target: none
+    detection: "`n_e2e_err_invalid` consecutive CRC or DLC errors"
+    reaction: "Frame INVALID; window STOP (E2E_ERROR)"
+    healing: VALID again
+  - code: U1A03-56
+    value: 0xDA0356
+    node: DCU
+    stage: A
+    name: CAN matrix version mismatch
+    severity: DEGRADED
+    inhibit:
+      target: window_lock
+      release: heal
+    detection: "`n_ver_debounce` consecutive CGW_NodeSts with a different major"
+    reaction: REJECTED_VERSION
+    healing: "Matching major for `t_comm_heal_ms`"
+  - code: U1B00-87
+    value: 0xDB0087
+    node: CGW
+    name: Lost communication with the DCU
+    severity: DEGRADED
+    detection: "DCU_NodeSts missing > 500 ms; confirmed after `t_comm_dtc_confirm_ms`"
+    reaction: "STOP latch; commands FAILED_COMM"
+    healing: "DCU_NodeSts VALID for `t_comm_heal_ms`"
+  - code: U1B01-88
+    value: 0xDB0188
+    node: CGW
+    name: CAN bus-off
+    severity: DEGRADED
+    detection: Bus-off state
+    reaction: "STOP latch, slot rewrite, recovery per §7.6"
+    healing: "`t_busoff_heal_ms` without errors"
+  - code: U1B02-82
+    value: 0xDB0282
+    node: CGW
+    name: E2E alive-counter errors
+    severity: WARNING
+    detection: 3 consecutive sequence or repetition errors
+    reaction: Frame data invalid
+    healing: VALID again
+  - code: U1B02-83
+    value: 0xDB0283
+    node: CGW
+    name: E2E CRC or DataID errors
+    severity: WARNING
+    detection: 3 consecutive CRC or DLC errors
+    reaction: Frame data invalid
+    healing: VALID again
+  - code: U1B03-56
+    value: 0xDB0356
+    node: CGW
+    name: CAN matrix version mismatch
+    severity: DEGRADED
+    detection: "`n_ver_debounce` consecutive DCU_NodeSts with a different major"
+    reaction: REJECTED_VERSION
+    healing: "Matching major for `t_comm_heal_ms`"
+  - code: B1B10-96
+    value: 0x9B1096
+    node: CGW
+    name: SoftAP start failure
+    severity: DEGRADED
+    detection: "No AP start within `t_ap_start_to_ms` after 3 attempts"
+    reaction: No APP link
+    healing: AP started
+  - code: B1B11-96
+    value: 0x9B1196
+    node: CGW
+    name: TWAI initialisation or driver fault
+    severity: CRITICAL
+    detection: Driver error
+    reaction: SAFE
+    healing: Reset
+  - code: B1B12-47
+    value: 0x9B1247
+    node: CGW
+    name: Watchdog reset (task or interrupt watchdog)
+    severity: WARNING
+    critical_at_reset_limit: true
+    detection: Reset reason
+    reaction: "Logged; `n_wdt_reset_safe` within `t_wdt_reset_window_ms` → SAFE"
+    healing: Aging
+  - code: B1B13-16
+    value: 0x9B1316
+    node: CGW
+    name: Brown-out reset
+    severity: WARNING
+    detection: Reset reason
+    reaction: Logged
+    healing: Aging
+  - code: B1B14-47
+    value: 0x9B1447
+    node: CGW
+    name: Panic reset
+    severity: WARNING
+    critical_at_reset_limit: true
+    detection: Reset reason, core dump present
+    reaction: "Logged; counts toward the reset limit"
+    healing: Aging
+  - code: B1B15-44
+    value: 0x9B1544
+    node: CGW
+    name: NVS or key store fault (erase performed)
+    severity: DEGRADED
+    detection: NVS error
+    reaction: "Unpaired; sessions closed with 4005"
+    healing: New pairing
+  - code: B1B16-96
+    value: 0x9B1696
+    node: CGW
+    name: Cryptographic self-test failure
+    severity: CRITICAL
+    detection: RFC 4231 / RFC 5869 known-answer tests at start-up
+    reaction: SAFE
+    healing: Reset
+
+notices:
+  - code: 0x0001
+    name: WINDOW_STOP_KA_TIMEOUT
+    severity: WARNING
+    meaning: The keep-alive timeout latched the press
+  - code: 0x0002
+    name: WINDOW_STOP_LINK_QUALITY
+    severity: WARNING
+    meaning: The RTT gate or a missing Pong latched the press
+  - code: 0x0003
+    name: WINDOW_STOP_DIR_CHANGE
+    severity: WARNING
+    meaning: Direction change within a press
+  - code: 0x0004
+    name: WINDOW_STOP_COMM
+    severity: WARNING
+    meaning: Bus-off or DCU lost during a press
+  - code: 0x0005
+    name: WINDOW_STOP_MODE
+    severity: WARNING
+    meaning: CGW or DCU mode change during a press
+  - code: 0x0006
+    name: WINDOW_STOP_BACKSTOP
+    severity: WARNING
+    meaning: "CGW backstop `t_cgw_max_run_backstop_ms` reached"
+  - code: 0x0007
+    name: WINDOW_STOP_DCU
+    severity: INFO
+    meaning: "DCU rejected or stopped the press; the reason is in `window_stop_reason`"
+  - code: 0x0008
+    name: WINDOW_STOP_SESSION
+    severity: INFO
+    meaning: Session loss, pre-emption or station disconnect latched the press (logged only)
+  - code: 0x0010
+    name: PAIRING_WINDOW_OPEN
+    severity: INFO
+    meaning: Pairing window opened
+  - code: 0x0011
+    name: PAIRING_WINDOW_CLOSED
+    severity: INFO
+    meaning: Pairing window closed without a new pairing
+  - code: 0x0012
+    name: PAIRING_COMMITTED
+    severity: INFO
+    meaning: A new pairing was committed

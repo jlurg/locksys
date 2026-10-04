@@ -1,0 +1,41 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2026 jlurg
+//
+// Classic Coder options of the debug variant (LS-DCU-GDE-001 section 6). Used as
+//   Coder.exe dcu_fsm.vsp --@options/coder_debug.opt
+// by firmware/dcu/scripts/vs/Invoke-VsGenerate.ps1, working directory
+// firmware/dcu/model/visualstate. Option spellings are confirmed against the option list
+// printed by Coder.exe (Lab Host check D9); differences are corrected here, never in the GUI.
+
+// Adaptive API, readable code with direct calls
+-api_type0
+-readable1
+// Static data only
+-useheap0
+// VSResult enumeration, no VS_TRUE/VS_FALSE
+-maximummisra1
+// API names prefixed with the system name (WinCtrlVSDeduct)
+-useapiprefix1
+-apiprefix$(SYSNAME)
+// <stdint.h> types where possible
+-typestyle1
+// 32-bit SEM types
+-D2
+// SES_FOUND is not a state-change report
+-semnextstatechg0
+// Byte-identical regeneration
+-generatetimeandversion0
+// A coder warning stops generation
+-warnings_are_errors1
+-warnings_affect_exit_code1
+// Contradiction tests stay in the generated code
+-omitcontradictiontests0
+// Output directory, relative to firmware/dcu/model/visualstate
+-path..\..\gen_vs\debug\
+// C-SPYLink instrumentation with bounded buffers (Debug configuration only)
+-cspylink1
+-fullinstrumentation0
+-usesamplingbuffer1
+-samplingbuffersize32
+-userecordingbuffer1
+-recordingbuffersize128

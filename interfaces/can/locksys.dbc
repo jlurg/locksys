@@ -1,0 +1,296 @@
+VERSION "1.0"
+
+
+NS_ :
+    CM_
+    BA_DEF_
+    BA_
+    VAL_
+    BA_DEF_DEF_
+
+BS_:
+
+BU_: CGW DCU HIL
+
+
+BO_ 256 CGW_WinCmd: 4 CGW
+ SG_ WinCmd_Crc : 0|8@1+ (1,0) [0|255] "" DCU,HIL
+ SG_ WinCmd_AliveCtr : 8|4@1+ (1,0) [0|15] "" DCU,HIL
+ SG_ WinCmd_Req : 12|2@1+ (1,0) [0|3] "" DCU,HIL
+ SG_ WinCmd_PressId : 16|8@1+ (1,0) [0|255] "" DCU,HIL
+ SG_ WinCmd_HoldAge : 24|8@1+ (10,0) [0|2550] "ms" DCU,HIL
+
+BO_ 272 CGW_DoorCmd: 4 CGW
+ SG_ DoorCmd_Crc : 0|8@1+ (1,0) [0|255] "" DCU,HIL
+ SG_ DoorCmd_AliveCtr : 8|4@1+ (1,0) [0|15] "" DCU,HIL
+ SG_ DoorCmd_Req : 12|2@1+ (1,0) [0|3] "" DCU,HIL
+ SG_ DoorCmd_ReqId : 16|8@1+ (1,0) [0|255] "" DCU,HIL
+
+BO_ 512 DCU_WinSts: 8 DCU
+ SG_ WinSts_Crc : 0|8@1+ (1,0) [0|255] "" CGW,HIL
+ SG_ WinSts_AliveCtr : 8|4@1+ (1,0) [0|15] "" CGW,HIL
+ SG_ WinSts_State : 12|3@1+ (1,0) [0|7] "" CGW,HIL
+ SG_ WinSts_PosPct : 16|8@1+ (1,0) [0|255] "%" CGW,HIL
+ SG_ WinSts_StopReason : 24|5@1+ (1,0) [0|31] "" CGW,HIL
+ SG_ WinSts_LimUp : 29|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ WinSts_LimDn : 30|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ WinSts_Current : 32|8@1+ (0.1,0) [0|25.5] "A" CGW,HIL
+ SG_ WinSts_PressIdEcho : 40|8@1+ (1,0) [0|255] "" CGW,HIL
+ SG_ WinSts_FltStall : 48|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ WinSts_FltOverCur : 49|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ WinSts_FltMaxRun : 50|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ WinSts_FltLimPlaus : 51|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ WinSts_FltDriver : 52|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ WinSts_FltSupply : 53|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ WinSts_FltComm : 54|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ WinSts_FltOverTemp : 55|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ WinSts_WinResult : 56|4@1+ (1,0) [0|15] "" CGW,HIL
+ SG_ WinSts_FltDirMismatch : 60|1@1+ (1,0) [0|1] "" CGW,HIL
+
+BO_ 513 DCU_WinMotion: 8 DCU
+ SG_ WinMot_Crc : 0|8@1+ (1,0) [0|255] "" CGW,HIL
+ SG_ WinMot_AliveCtr : 8|4@1+ (1,0) [0|15] "" CGW,HIL
+ SG_ WinMot_EncSts : 12|3@1+ (1,0) [0|7] "" CGW,HIL
+ SG_ WinMot_Speed : 16|16@1- (0.1,0) [-3276.8|3276.7] "rpm" CGW,HIL
+ SG_ WinMot_DutyPct : 32|8@1+ (1,0) [0|100] "%" CGW,HIL
+ SG_ WinMot_PosCounts : 40|24@1- (1,0) [-8388608|8388607] "counts" CGW,HIL
+
+BO_ 528 DCU_DoorSts: 8 DCU
+ SG_ DoorSts_Crc : 0|8@1+ (1,0) [0|255] "" CGW,HIL
+ SG_ DoorSts_AliveCtr : 8|4@1+ (1,0) [0|15] "" CGW,HIL
+ SG_ DoorSts_LockState : 12|3@1+ (1,0) [0|7] "" CGW,HIL
+ SG_ DoorSts_LastReqId : 16|8@1+ (1,0) [0|255] "" CGW,HIL
+ SG_ DoorSts_LastResult : 24|4@1+ (1,0) [0|15] "" CGW,HIL
+ SG_ DoorSts_FbSwitch : 28|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ DoorSts_FltActuator : 29|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ DoorSts_FltDriver : 30|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ DoorSts_RateLimited : 31|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ DoorSts_ActCount : 32|8@1+ (1,0) [0|255] "" CGW,HIL
+ SG_ DoorSts_PeakCurrent : 40|8@1+ (0.1,0) [0|25.5] "A" CGW,HIL
+
+BO_ 544 DCU_TempSts: 8 DCU
+ SG_ TempSts_Crc : 0|8@1+ (1,0) [0|255] "" CGW,HIL
+ SG_ TempSts_AliveCtr : 8|4@1+ (1,0) [0|15] "" CGW,HIL
+ SG_ TempSts_Status : 12|3@1+ (1,0) [0|7] "" CGW,HIL
+ SG_ TempSts_Value : 16|16@1- (0.01,0) [-327.68|327.67] "degC" CGW,HIL
+ SG_ TempSts_SampleSeq : 32|8@1+ (1,0) [0|255] "" CGW,HIL
+
+BO_ 1280 CGW_NodeSts: 8 CGW
+ SG_ CgwSts_Crc : 0|8@1+ (1,0) [0|255] "" DCU,HIL
+ SG_ CgwSts_AliveCtr : 8|4@1+ (1,0) [0|15] "" DCU,HIL
+ SG_ CgwSts_Mode : 12|3@1+ (1,0) [0|7] "" DCU,HIL
+ SG_ CgwSts_ComVerMajor : 16|4@1+ (1,0) [0|15] "" DCU,HIL
+ SG_ CgwSts_ComVerMinor : 20|4@1+ (1,0) [0|15] "" DCU,HIL
+ SG_ CgwSts_AppLink : 24|2@1+ (1,0) [0|3] "" DCU,HIL
+ SG_ CgwSts_WifiClients : 26|3@1+ (1,0) [0|7] "" DCU,HIL
+ SG_ CgwSts_ResetReason : 32|3@1+ (1,0) [0|7] "" DCU,HIL
+ SG_ CgwSts_DtcCount : 40|8@1+ (1,0) [0|255] "" DCU,HIL
+ SG_ CgwSts_HeapFreePct : 48|8@1+ (1,0) [0|100] "%" DCU,HIL
+
+BO_ 1296 DCU_NodeSts: 8 DCU
+ SG_ DcuSts_Crc : 0|8@1+ (1,0) [0|255] "" CGW,HIL
+ SG_ DcuSts_AliveCtr : 8|4@1+ (1,0) [0|15] "" CGW,HIL
+ SG_ DcuSts_Mode : 12|3@1+ (1,0) [0|7] "" CGW,HIL
+ SG_ DcuSts_ComVerMajor : 16|4@1+ (1,0) [0|15] "" CGW,HIL
+ SG_ DcuSts_ComVerMinor : 20|4@1+ (1,0) [0|15] "" CGW,HIL
+ SG_ DcuSts_Vbat : 24|8@1+ (0.1,0) [0|25.5] "V" CGW,HIL
+ SG_ DcuSts_ResetReason : 32|3@1+ (1,0) [0|7] "" CGW,HIL
+ SG_ DcuSts_DtcCount : 40|8@1+ (1,0) [0|255] "" CGW,HIL
+ SG_ DcuSts_CpuLoadMax : 48|8@1+ (1,0) [0|100] "%" CGW,HIL
+ SG_ DcuSts_WinInhibit : 56|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ DcuSts_LockInhibit : 57|1@1+ (1,0) [0|1] "" CGW,HIL
+
+BO_ 1408 CGW_Version: 8 CGW
+ SG_ CgwVer_SwMajor : 0|8@1+ (1,0) [0|255] "" DCU,HIL
+ SG_ CgwVer_SwMinor : 8|8@1+ (1,0) [0|255] "" DCU,HIL
+ SG_ CgwVer_SwPatch : 16|8@1+ (1,0) [0|255] "" DCU,HIL
+ SG_ CgwVer_ComVerMajor : 24|4@1+ (1,0) [0|15] "" DCU,HIL
+ SG_ CgwVer_ComVerMinor : 28|4@1+ (1,0) [0|15] "" DCU,HIL
+ SG_ CgwVer_GitHash : 32|28@1+ (1,0) [0|268435455] "" DCU,HIL
+ SG_ CgwVer_Dirty : 60|1@1+ (1,0) [0|1] "" DCU,HIL
+ SG_ CgwVer_BuildType : 61|2@1+ (1,0) [0|3] "" DCU,HIL
+
+BO_ 1424 DCU_Version: 8 DCU
+ SG_ DcuVer_SwMajor : 0|8@1+ (1,0) [0|255] "" CGW,HIL
+ SG_ DcuVer_SwMinor : 8|8@1+ (1,0) [0|255] "" CGW,HIL
+ SG_ DcuVer_SwPatch : 16|8@1+ (1,0) [0|255] "" CGW,HIL
+ SG_ DcuVer_ComVerMajor : 24|4@1+ (1,0) [0|15] "" CGW,HIL
+ SG_ DcuVer_ComVerMinor : 28|4@1+ (1,0) [0|15] "" CGW,HIL
+ SG_ DcuVer_GitHash : 32|28@1+ (1,0) [0|268435455] "" CGW,HIL
+ SG_ DcuVer_Dirty : 60|1@1+ (1,0) [0|1] "" CGW,HIL
+ SG_ DcuVer_BuildType : 61|2@1+ (1,0) [0|3] "" CGW,HIL
+
+BO_ 1952 DIAG_DcuReq: 8 HIL
+
+BO_ 1960 DIAG_DcuResp: 8 DCU
+
+
+CM_ BU_ CGW "Connectivity Gateway, ESP32-S3-DevKitC-1-N8R8";
+CM_ BU_ DCU "Door Control Unit, NUCLEO-F103RB";
+CM_ BU_ HIL "Test bench node: restbus, monitor and UDS tester";
+CM_ BO_ 256 "Window hold-to-run command. E2E cyclic, DataID 0x1001. Sent every 20 ms and on a WinCmd_Req change (minimum gap 5 ms)";
+CM_ SG_ 256 WinCmd_Req "Requested direction. The DCU moves only while Req is UP or DOWN and every motion permission holds";
+CM_ SG_ 256 WinCmd_PressId "CGW 8-bit press counter 1..255, wraps and skips 0. 0 = no press. A latched PressId never starts motion";
+CM_ SG_ 256 WinCmd_HoldAge "Age of the last authenticated APP keep-alive at send time, 10 ms per bit. Raw 255 = no keep-alive or age >= 2550 ms; sent after any non-release stop latch. The DCU rejects motion if the age exceeds 400 ms";
+CM_ BO_ 272 "Door lock command. E2E event mode, DataID 0x1002. Sent 3 times at 0, 20 and 40 ms per new ReqId";
+CM_ SG_ 272 DoorCmd_ReqId "CGW 8-bit request counter 1..255, wraps and skips 0. Repetitions of one ReqId cause at most one actuation";
+CM_ BO_ 512 "Window status. E2E cyclic, DataID 0x2001. Sent every 50 ms and on change (minimum gap 10 ms)";
+CM_ SG_ 512 WinSts_PosPct "0 = fully closed, 100 = fully open, 255 = UNKNOWN. Stage A: always 255. Stage B: derived from encoder counts and the configured travel";
+CM_ SG_ 512 WinSts_StopReason "Reason of the last stop (WindowStopReason). NONE until the first stop after reset";
+CM_ SG_ 512 WinSts_LimUp "Upper end position active. Reserved in stage A (sent as 0). Stage B: virtual limit, stage D: limit switch";
+CM_ SG_ 512 WinSts_LimDn "Lower end position active. Reserved in stage A (sent as 0). Stage B: virtual limit, stage D: limit switch";
+CM_ SG_ 512 WinSts_Current "Filtered window motor current from the VNH5019 CS output, 0.1 A per bit. Raw 255 = INVALID";
+CM_ SG_ 512 WinSts_PressIdEcho "Active PressId while moving, otherwise the last latched PressId. After reset: the first PressId received with E2E OK";
+CM_ SG_ 512 WinSts_FltStall "Motion not confirmed by the encoder (NO_MOTION) or stall, latched for the press";
+CM_ SG_ 512 WinSts_FltLimPlaus "End-position plausibility fault. Stage D only (sent as 0 in stages A and B)";
+CM_ SG_ 512 WinSts_WinResult "DCU decision for the PressIdEcho press (CommandResult): UNSPECIFIED = none yet, ACCEPTED = moving, OK = ended by release, other = start rejected or press ended by a non-release stop";
+CM_ SG_ 512 WinSts_FltDirMismatch "Encoder counts opposite to the commanded direction (DIR_MISMATCH), latched";
+CM_ BO_ 513 "Window motion telemetry. E2E cyclic, DataID 0x2004. Sent every 50 ms";
+CM_ SG_ 513 WinMot_EncSts "Encoder supervision verdict (EncoderStatus)";
+CM_ SG_ 513 WinMot_Speed "Output-shaft speed averaged over the last 50 ms, 0.1 rpm per bit, positive = UP. Raw -32768 = INVALID";
+CM_ SG_ 513 WinMot_DutyPct "Commanded PWM duty magnitude of the window bridge, 0..100 %";
+CM_ SG_ 513 WinMot_PosCounts "Relative position in encoder counts (x4 decoding) since reset, positive = UP. Low 24 bits of the DCU 32-bit counter, wraps modulo 2^24";
+CM_ BO_ 528 "Door lock status. E2E cyclic, DataID 0x2002. Sent every 100 ms and on change (minimum gap 10 ms)";
+CM_ SG_ 528 DoorSts_LockState "Derived from the actuator position switch, never from the command";
+CM_ SG_ 528 DoorSts_LastReqId "ReqId of the last accepted door request. Set together with LastResult = ACCEPTED when execution starts";
+CM_ SG_ 528 DoorSts_LastResult "Result for LastReqId: ACCEPTED while executing, then OK, FAILED_x or REJECTED_x";
+CM_ SG_ 528 DoorSts_FbSwitch "Debounced raw level of the lock position switch after polarity calibration (1 = locked position)";
+CM_ SG_ 528 DoorSts_RateLimited "1 while 10 actuations lie inside the last 60 s";
+CM_ SG_ 528 DoorSts_ActCount "Lock actuation pulses since reset, modulo 256";
+CM_ SG_ 528 DoorSts_PeakCurrent "Peak lock current of the last pulse, 0.1 A per bit";
+CM_ BO_ 544 "Temperature status. E2E cyclic, DataID 0x2003. Sent every 1000 ms right after each sample";
+CM_ SG_ 544 TempSts_Value "ECU temperature in 0.01 degC, cdeg = sign(raw)*floor((abs(raw)*78125 + 50000)/100000) from the TMP117 register. Valid -40..125 degC. Raw -32768 = INVALID";
+CM_ SG_ 544 TempSts_SampleSeq "Sample counter modulo 256. Equals the UART LSTMP sequence number modulo 256";
+CM_ BO_ 1280 "CGW heartbeat and status. E2E cyclic, DataID 0x5001. Sent every 100 ms";
+CM_ SG_ 1280 CgwSts_HeapFreePct "floor(100 * free internal heap / total internal heap), updated every 1 s";
+CM_ SG_ 1280 CgwSts_DtcCount "Number of CGW DTCs with status bit 3 (confirmed) set";
+CM_ BO_ 1296 "DCU heartbeat and status. E2E cyclic, DataID 0x5002. Sent every 100 ms from scheduler start (NodeMode INIT reported)";
+CM_ SG_ 1296 DcuSts_Vbat "KL30 voltage, 0.1 V per bit. Raw 255 = INVALID or KL30 sense not fitted";
+CM_ SG_ 1296 DcuSts_DtcCount "Number of DCU DTCs with status bit 3 (confirmed) set";
+CM_ SG_ 1296 DcuSts_CpuLoadMax "Maximum CPU load over 1 s windows since reset";
+CM_ SG_ 1296 DcuSts_WinInhibit "1 = window starts inhibited by mode or by an active DTC inhibit";
+CM_ SG_ 1296 DcuSts_LockInhibit "1 = lock actuation inhibited by mode or by an active DTC inhibit";
+CM_ BO_ 1408 "CGW software identification. No E2E. Sent every 1000 ms";
+CM_ SG_ 1408 CgwVer_GitHash "First 7 hex digits of the git commit hash";
+CM_ BO_ 1424 "DCU software identification. No E2E. Sent every 1000 ms";
+CM_ SG_ 1424 DcuVer_GitHash "First 7 hex digits of the git commit hash";
+CM_ BO_ 1952 "UDS-lite physical request to the DCU. ISO 15765-2 normal addressing, padding 0xCC. Excluded from signal code generation";
+CM_ BO_ 1960 "UDS-lite physical response from the DCU. ISO 15765-2 normal addressing, padding 0xCC. Excluded from signal code generation";
+
+
+BA_DEF_ "BusType" STRING ;
+BA_DEF_ "Baudrate" INT 0 1000000;
+BA_DEF_ "ComMatrixVersion" STRING ;
+BA_DEF_ BO_ "GenMsgCycleTime" INT 0 65535;
+BA_DEF_ BO_ "GenMsgSendType" ENUM "Cyclic","Event","CyclicAndEvent";
+BA_DEF_ BO_ "GenMsgNrOfRepetition" INT 0 255;
+BA_DEF_ BO_ "GenMsgDelayTime" INT 0 65535;
+BA_DEF_ BO_ "LsE2eMode" ENUM "None","Cyclic","Event";
+BA_DEF_ BO_ "LsE2eDataId" INT 0 65535;
+BA_DEF_ BO_ "LsE2eMaxDelta" INT 0 14;
+BA_DEF_ BO_ "LsRxTimeoutMs" INT 0 65535;
+BA_DEF_ SG_ "GenSigStartValue" INT -8388608 268435455;
+BA_DEF_DEF_ "BusType" "CAN";
+BA_DEF_DEF_ "Baudrate" 500000;
+BA_DEF_DEF_ "ComMatrixVersion" "1.0";
+BA_DEF_DEF_ "GenMsgCycleTime" 0;
+BA_DEF_DEF_ "GenMsgSendType" "Cyclic";
+BA_DEF_DEF_ "GenMsgNrOfRepetition" 0;
+BA_DEF_DEF_ "GenMsgDelayTime" 0;
+BA_DEF_DEF_ "LsE2eMode" "None";
+BA_DEF_DEF_ "LsE2eDataId" 0;
+BA_DEF_DEF_ "LsE2eMaxDelta" 0;
+BA_DEF_DEF_ "LsRxTimeoutMs" 0;
+BA_DEF_DEF_ "GenSigStartValue" 0;
+BA_ "BusType" "CAN";
+BA_ "Baudrate" 500000;
+BA_ "ComMatrixVersion" "1.0";
+BA_ "GenMsgCycleTime" BO_ 256 20;
+BA_ "GenMsgSendType" BO_ 256 2;
+BA_ "GenMsgDelayTime" BO_ 256 5;
+BA_ "LsE2eMode" BO_ 256 1;
+BA_ "LsE2eDataId" BO_ 256 4097;
+BA_ "LsE2eMaxDelta" BO_ 256 2;
+BA_ "LsRxTimeoutMs" BO_ 256 100;
+BA_ "GenMsgSendType" BO_ 272 1;
+BA_ "GenMsgNrOfRepetition" BO_ 272 2;
+BA_ "GenMsgDelayTime" BO_ 272 20;
+BA_ "LsE2eMode" BO_ 272 2;
+BA_ "LsE2eDataId" BO_ 272 4098;
+BA_ "GenMsgCycleTime" BO_ 512 50;
+BA_ "GenMsgSendType" BO_ 512 2;
+BA_ "GenMsgDelayTime" BO_ 512 10;
+BA_ "LsE2eMode" BO_ 512 1;
+BA_ "LsE2eDataId" BO_ 512 8193;
+BA_ "LsE2eMaxDelta" BO_ 512 3;
+BA_ "LsRxTimeoutMs" BO_ 512 250;
+BA_ "GenMsgCycleTime" BO_ 513 50;
+BA_ "LsE2eMode" BO_ 513 1;
+BA_ "LsE2eDataId" BO_ 513 8196;
+BA_ "LsE2eMaxDelta" BO_ 513 3;
+BA_ "LsRxTimeoutMs" BO_ 513 250;
+BA_ "GenMsgCycleTime" BO_ 528 100;
+BA_ "GenMsgSendType" BO_ 528 2;
+BA_ "GenMsgDelayTime" BO_ 528 10;
+BA_ "LsE2eMode" BO_ 528 1;
+BA_ "LsE2eDataId" BO_ 528 8194;
+BA_ "LsE2eMaxDelta" BO_ 528 3;
+BA_ "LsRxTimeoutMs" BO_ 528 500;
+BA_ "GenMsgCycleTime" BO_ 544 1000;
+BA_ "LsE2eMode" BO_ 544 1;
+BA_ "LsE2eDataId" BO_ 544 8195;
+BA_ "LsE2eMaxDelta" BO_ 544 3;
+BA_ "LsRxTimeoutMs" BO_ 544 3000;
+BA_ "GenMsgCycleTime" BO_ 1280 100;
+BA_ "LsE2eMode" BO_ 1280 1;
+BA_ "LsE2eDataId" BO_ 1280 20481;
+BA_ "LsE2eMaxDelta" BO_ 1280 3;
+BA_ "LsRxTimeoutMs" BO_ 1280 500;
+BA_ "GenMsgCycleTime" BO_ 1296 100;
+BA_ "LsE2eMode" BO_ 1296 1;
+BA_ "LsE2eDataId" BO_ 1296 20482;
+BA_ "LsE2eMaxDelta" BO_ 1296 3;
+BA_ "LsRxTimeoutMs" BO_ 1296 500;
+BA_ "GenMsgCycleTime" BO_ 1408 1000;
+BA_ "GenMsgCycleTime" BO_ 1424 1000;
+BA_ "GenMsgSendType" BO_ 1952 1;
+BA_ "GenMsgSendType" BO_ 1960 1;
+BA_ "GenSigStartValue" SG_ 256 WinCmd_HoldAge 255;
+BA_ "GenSigStartValue" SG_ 512 WinSts_PosPct 255;
+BA_ "GenSigStartValue" SG_ 512 WinSts_Current 255;
+BA_ "GenSigStartValue" SG_ 513 WinMot_Speed -32768;
+BA_ "GenSigStartValue" SG_ 544 TempSts_Value -32768;
+BA_ "GenSigStartValue" SG_ 1296 DcuSts_Vbat 255;
+BA_ "GenSigStartValue" SG_ 1280 CgwSts_Mode 1;
+BA_ "GenSigStartValue" SG_ 1280 CgwSts_ComVerMajor 1;
+BA_ "GenSigStartValue" SG_ 1296 DcuSts_Mode 1;
+BA_ "GenSigStartValue" SG_ 1296 DcuSts_ComVerMajor 1;
+BA_ "GenSigStartValue" SG_ 1296 DcuSts_WinInhibit 1;
+BA_ "GenSigStartValue" SG_ 1296 DcuSts_LockInhibit 1;
+BA_ "GenSigStartValue" SG_ 1408 CgwVer_ComVerMajor 1;
+BA_ "GenSigStartValue" SG_ 1424 DcuVer_ComVerMajor 1;
+
+
+VAL_ 256 WinCmd_Req 0 "STOP" 1 "UP" 2 "DOWN" 3 "INVALID" ;
+VAL_ 256 WinCmd_PressId 0 "NONE" ;
+VAL_ 256 WinCmd_HoldAge 255 "NONE" ;
+VAL_ 272 DoorCmd_Req 0 "NONE" 1 "LOCK" 2 "UNLOCK" 3 "INVALID" ;
+VAL_ 512 WinSts_State 0 "UNKNOWN" 1 "STOPPED" 2 "MOVING_UP" 3 "MOVING_DOWN" 4 "FULLY_CLOSED" 5 "FULLY_OPEN" 6 "BLOCKED" 7 "FAULT" ;
+VAL_ 512 WinSts_PosPct 255 "UNKNOWN" ;
+VAL_ 512 WinSts_StopReason 0 "NONE" 1 "RELEASED" 2 "UPPER_LIMIT" 3 "LOWER_LIMIT" 4 "HOLD_TIMEOUT" 5 "CAN_TIMEOUT" 6 "E2E_ERROR" 7 "STALL" 8 "OVERCURRENT" 9 "MAX_RUNTIME" 10 "OBSTACLE" 11 "UNDERVOLTAGE" 12 "OVERVOLTAGE" 13 "OVERTEMP" 14 "DRIVER_FAULT" 15 "MODE_INHIBIT" 16 "DIR_MISMATCH" ;
+VAL_ 512 WinSts_Current 255 "INVALID" ;
+VAL_ 512 WinSts_WinResult 0 "UNSPECIFIED" 1 "OK" 2 "ACCEPTED" 3 "REJECTED_BUSY" 4 "REJECTED_MODE" 5 "REJECTED_INTERLOCK" 6 "REJECTED_RATE_LIMIT" 7 "REJECTED_INVALID" 8 "FAILED_ACTUATOR" 9 "FAILED_TIMEOUT" 10 "FAILED_COMM" 11 "REJECTED_AUTH" 12 "REJECTED_VERSION" 13 "REJECTED_LINK_QUALITY" ;
+VAL_ 513 WinMot_EncSts 0 "UNKNOWN" 1 "OK" 2 "NO_MOTION" 3 "DIR_MISMATCH" ;
+VAL_ 513 WinMot_Speed -32768 "INVALID" ;
+VAL_ 528 DoorSts_LockState 0 "UNKNOWN" 1 "LOCKED" 2 "UNLOCKED" 3 "LOCKING" 4 "UNLOCKING" 5 "FAULT" ;
+VAL_ 528 DoorSts_LastResult 0 "UNSPECIFIED" 1 "OK" 2 "ACCEPTED" 3 "REJECTED_BUSY" 4 "REJECTED_MODE" 5 "REJECTED_INTERLOCK" 6 "REJECTED_RATE_LIMIT" 7 "REJECTED_INVALID" 8 "FAILED_ACTUATOR" 9 "FAILED_TIMEOUT" 10 "FAILED_COMM" 11 "REJECTED_AUTH" 12 "REJECTED_VERSION" 13 "REJECTED_LINK_QUALITY" ;
+VAL_ 544 TempSts_Status 0 "UNKNOWN" 1 "VALID" 2 "OUT_OF_RANGE" 3 "IMPLAUSIBLE" 4 "SENSOR_FAULT" 5 "STALE" ;
+VAL_ 544 TempSts_Value -32768 "INVALID" ;
+VAL_ 1280 CgwSts_Mode 0 "UNKNOWN" 1 "INIT" 2 "NORMAL" 3 "DEGRADED" 4 "SAFE" 5 "SERVICE" ;
+VAL_ 1280 CgwSts_AppLink 0 "NONE" 1 "CONNECTED" 2 "AUTHENTICATED" 3 "PAIRING" ;
+VAL_ 1280 CgwSts_ResetReason 0 "UNKNOWN" 1 "POWER_ON" 2 "PIN" 3 "SOFTWARE" 4 "WATCHDOG" 5 "WINDOW_WATCHDOG" 6 "LOW_POWER" 7 "BROWNOUT" ;
+VAL_ 1296 DcuSts_Mode 0 "UNKNOWN" 1 "INIT" 2 "NORMAL" 3 "DEGRADED" 4 "SAFE" 5 "SERVICE" ;
+VAL_ 1296 DcuSts_Vbat 255 "INVALID" ;
+VAL_ 1296 DcuSts_ResetReason 0 "UNKNOWN" 1 "POWER_ON" 2 "PIN" 3 "SOFTWARE" 4 "WATCHDOG" 5 "WINDOW_WATCHDOG" 6 "LOW_POWER" 7 "BROWNOUT" ;
+VAL_ 1408 CgwVer_BuildType 0 "DEV" 1 "RC" 2 "RELEASE" ;
+VAL_ 1424 DcuVer_BuildType 0 "DEV" 1 "RC" 2 "RELEASE" ;

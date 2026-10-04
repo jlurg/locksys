@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "C-STAT",
+          "version": "9.70.4",
+          "rules": [
+            {"id": "MISRAC2012-Rule-10.4_a", "shortDescription": {"text": "Essential type mismatch"}},
+            {"id": "MISRAC2012-Rule-11.4", "shortDescription": {"text": "Pointer/integer conversion"}},
+            {"id": "MISRAC2012-Rule-8.4", "shortDescription": {"text": "Compatible declaration visible"}}
+          ]
+        }
+      },
+      "originalUriBaseIds": {
+        "SRCROOT": {"uri": "file:///C:/labhost/runners/iar/_work/locksys/locksys/"}
+      },
+      "results": [
+        {
+          "ruleId": "MISRAC2012-Rule-10.4_a",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {"text": "Mismatched essential type categories for binary operator."},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/labhost/runners/iar/_work/locksys/locksys/firmware/dcu/src/app/win_ctrl/win_ctrl.c"
+                },
+                "region": {"startLine": 42}
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "MISRAC2012-Rule-11.4",
+          "message": {"text": "Conversion between a pointer to object and an integer type."},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/labhost/runners/iar/_work/locksys/locksys/firmware/dcu/src/mcal/gpio/gpio.c"
+                },
+                "region": {"startLine": 17}
+              }
+            }
+          ],
+          "suppressions": [{"kind": "inSource"}]
+        },
+        {
+          "ruleId": "MISRAC2012-Rule-8.4",
+          "message": {"text": "A compatible declaration shall be visible."},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {"uri": "firmware/dcu/src/main.c"},
+                "region": {"startLine": 5}
+              }
+            }
+          ],
+          "suppressions": [{"kind": "inSource", "status": "rejected"}]
+        },
+        {
+          "ruleId": "MISRAC2012-Rule-8.4",
+          "kind": "pass",
+          "message": {"text": "Informational pass record."},
+          "locations": []
+        },
+        {
+          "ruleIndex": 2,
+          "message": {"text": "A compatible declaration shall be visible."},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {"uri": "libs/ls_e2e/src/ls_e2e.c", "uriBaseId": "SRCROOT", "index": 0},
+                "region": {"startLine": 88}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

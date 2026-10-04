@@ -1,0 +1,154 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Shared IAR build definition (workflow_call only), used by dcu-iar.yml, hil.yml and
+# release.yml. The Lab Host job holds a read-only token; the SARIF upload to code
+# scanning runs in a GitHub-hosted job.
+#
+# Lab Host contract (tools/labhost/README.md):
+#   LS_EWARM_DIR  EWARM installation root, set in the runner .env (arm\bin\iccarm.exe).
+#   Invoke-DcuBuild.ps1 writes images and map files to out/<Config>/ and the C-STAT
+#   SARIF output to out/cstat/; it supports the EWARM 9.70.x and 10.10.x command lines.
+name: _iar-build
+
+on:
+  workflow_call:
+    inputs:
+      configs:
+        description: Comma-separated IAR build configurations
+        type: string
+        default: Debug,Release
+      cstat:
+        description: Run C-STAT and the C-STAT gate
+        type: boolean
+        default: true
+      vs-check:
+        description: Regenerate the Visual State code and compare it with the committed code
+        type: boolean
+        default: true
+      upload-sarif:
+        description: Upload the C-STAT SARIF to code scanning
+        type: boolean
+        default: false
+      artifact-name:
+        description: Prefix of the build artifact name (the commit SHA is appended)
+        type: string
+        default: dcu-iar
+    outputs:
+      artifact:
+        description: Name of the uploaded build artifact
+        value: ${{ inputs.artifact-name }}-${{ github.sha }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build
+    runs-on: [self-hosted, windows, iar]
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          clean: true
+      - name: Toolchain version
+        run: |
+          if (-not $env:LS_EWARM_DIR) { throw 'LS_EWARM_DIR is not set in the runner environment' }
+          $iccarm = Join-Path $env:LS_EWARM_DIR 'arm\bin\iccarm.exe'
+          New-Item -ItemType Directory -Force -Path out | Out-Null
+          $version = & $iccarm --version
+          if ($LASTEXITCODE -ne 0) { throw "iccarm --version failed with exit code $LASTEXITCODE" }
+          $version | Set-Content -Path out/iccarm-version.txt -Encoding utf8
+          $version
+      - name: Visual State regeneration check
+        if: inputs.vs-check && hashFiles('firmware/dcu/model/visualstate/*.vsp') != ''
+        run: ./firmware/dcu/scripts/vs/Invoke-VsGenerate.ps1 -Check
+      - name: IAR build and C-STAT analysis
+        env:
+          CONFIGS: ${{ inputs.configs }}
+          CSTAT: ${{ inputs.cstat }}
+        run: |
+          $build = @{
+            Configs = @($env:CONFIGS -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+            OutDir  = 'out'
+          }
+          if ($env:CSTAT -eq 'true') { $build.CStat = $true }
+          ./firmware/dcu/scripts/iar/Invoke-DcuBuild.ps1 @build
+      - name: C-STAT gate
+        if: inputs.cstat
+        run: |
+          $maps = @(Get-ChildItem -Path out -Recurse -Filter *.map -File | ForEach-Object { $_.FullName })
+          $releaseMaps = @($maps | Where-Object { $_ -match '[\\/]Release[\\/]' })
+          $otherMaps = @($maps | Where-Object { $_ -notmatch '[\\/]Release[\\/]' })
+          if ($releaseMaps.Count -eq 0) { throw 'no Release map file under out/' }
+          $candidates = @('firmware/dcu/src', 'firmware/dcu/cfg')
+          foreach ($lib in @(Get-ChildItem -Path libs -Directory)) {
+            $candidates += Join-Path $lib.FullName 'src'
+            $candidates += Join-Path $lib.FullName 'include'
+          }
+          $sources = @($candidates | Where-Object { Test-Path -LiteralPath $_ })
+          $gate = @(
+            'run', 'tools/ci/cstat_gate.py',
+            '--sarif', 'out/cstat',
+            '--sarif-out', 'out/cstat-merged.sarif',
+            '--deviations', 'docs/08_process/misra/deviations.yaml',
+            '--compiler-version-file', 'out/iccarm-version.txt',
+            '--versions-env', 'tools/versions.env',
+            '--source-root', $env:GITHUB_WORKSPACE,
+            '--summary', $env:GITHUB_STEP_SUMMARY
+          )
+          $gate += @('--sources') + $sources
+          foreach ($map in $releaseMaps) { $gate += @('--release-map', $map) }
+          foreach ($map in $otherMaps) { $gate += @('--map', $map) }
+          & uv @gate
+          if ($LASTEXITCODE -ne 0) { throw "C-STAT gate failed with exit code $LASTEXITCODE" }
+      - name: Upload build outputs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ inputs.artifact-name }}-${{ github.sha }}
+          path: out/
+          retention-days: 30
+          if-no-files-found: warn
+          overwrite: true
+
+  sarif:
+    name: sarif
+    needs: build
+    if: always() && inputs.cstat && inputs.upload-sarif && needs.build.result != 'skipped'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ inputs.artifact-name }}-${{ github.sha }}
+          path: ${{ runner.temp }}/dcu-iar
+      - name: Locate the merged SARIF
+        id: locate
+        env:
+          SARIF: ${{ runner.temp }}/dcu-iar/cstat-merged.sarif
+        run: |
+          if [ -f "$SARIF" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::no merged C-STAT SARIF in the build artifact"
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Upload to code scanning
+        if: steps.locate.outputs.present == 'true'
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          sarif_file: ${{ runner.temp }}/dcu-iar/cstat-merged.sarif
+          category: c-stat

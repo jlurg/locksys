@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Ceedling 1.1.9 host unit tests of libs/ls_common (LsCrc8, LsEvSet, LsTmr, LsRing).
+# Run: tools/docker/ceedling/run.sh libs/ls_common test:all   (coverage: gcov:all)
+# CI: tools/ci/ceedling_ci.sh libs libs/ls_common; thresholds in tools/ci/quality_gates.yaml.
+---
+:project:
+  :build_root: build
+  :test_file_prefix: test_
+  :use_mocks: FALSE
+  :use_test_preprocessor: :none
+  :use_backtrace: :none
+  :default_tasks:
+    - test:all
+
+:paths:
+  :test:
+    - +:test/**
+  :source:
+    - src/**
+  :include:
+    - include/**
+    - gen/**
+
+:defines:
+  :test:
+    - LS_HOST_TEST
+
+:flags:
+  :test:
+    :compile:
+      :*:
+        - -std=c99
+        - -pedantic
+        - -Wall
+        - -Wextra
+        - -Wconversion
+        - -Wsign-conversion
+        - -Wshadow
+        - -Wstrict-prototypes
+        - -Werror
+
+:plugins:
+  :enabled:
+    - report_tests_pretty_stdout
+    - gcov
+
+# Coverage: gcovr JSON at build/artifacts/gcov/gcovr/GcovCoverage.json, paths relative to this
+# directory (read by tools/ci/coverage_gate.py).
+:gcov:
+  :summaries: TRUE
+  # Sources without a test appear in the report with 0 % coverage.
+  :untested_sources: :compile
+  :reports:
+    - JSON
+    - HtmlDetailed
+  :gcovr:
+    :report_root: "."
+    :exclude:
+      - "^test/.*"
+      - "^gen/.*"
+...

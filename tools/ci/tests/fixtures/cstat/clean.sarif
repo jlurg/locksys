@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "C-STAT",
+          "rules": [{"id": "MISRAC2012-Rule-11.4"}]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "MISRAC2012-Rule-11.4",
+          "message": {"text": "Conversion between a pointer to object and an integer type."},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {"uri": "file:///C:/labhost/runners/iar/_work/locksys/locksys/firmware/dcu/src/mcal/gpio/gpio.c"},
+                "region": {"startLine": 17}
+              }
+            }
+          ],
+          "suppressions": [{"kind": "inSource", "status": "accepted"}]
+        }
+      ]
+    },
+    {
+      "tool": {"driver": {"name": "C-STAT"}},
+      "results": []
+    }
+  ]
+}

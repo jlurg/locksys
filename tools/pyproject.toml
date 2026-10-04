@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Repository tooling (code generation, version header, traceability, CI gates, governance).
+# Scripts run from the repository root, for example `uv run tools/codegen/regen.py`.
+# protoc is the pinned binary fetched by tools/codegen/fetch_protoc.py (PROTOC in
+# tools/versions.env); grpcio-tools is intentionally not used, so the nanopb generator and the
+# Python stubs share one protoc release.
+
+[project]
+name = "locksys-tools"
+dynamic = ["version"]
+description = "LockSys repository tooling: code generation, traceability, CI gates and governance."
+license = "Apache-2.0"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "cantools==44.1.0",
+  "jinja2>=3.1.6,<4",
+  "jsonschema>=4.26.0,<5",
+  "protobuf>=6.33.6,<6.34",
+  "pyyaml>=6.0.3,<7",
+]
+
+[tool.uv]
+package = false

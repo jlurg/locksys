@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Instrument register (LS-HIL-001 section 11.1). Entries are completed when the instruments are
+# purchased (OP-HIL-01, OP-HIL-03, OP-HIL-04).
+instruments:
+  - id: DMM-01
+    kind: dmm
+    identity: TBD
+    verification: accredited calibration or check against a DC reference and 0.1 % resistors
+    interval_months: 12
+    due: TBD
+  - id: PSU-01
+    kind: psu
+    identity: TBD
+    verification: read-back against DMM-01 at 5, 12 and 17 V
+    interval_months: 6
+    due: TBD
+  - id: LOGIC-01
+    kind: logic_analyser
+    identity: TBD
+    verification: timing against the stimulus reference pulses in every self-test (+-0.01 %)
+    interval_months: 0
+    due: every run
+  - id: CAN-01
+    kind: usb_can
+    identity: TBD
+    verification: timestamps against the logic-analyser CAN decode (offset and jitter < 50 us)
+    interval_months: 0
+    due: per bench qualification
+  - id: STIM-01
+    kind: stimulus
+    identity: TBD
+    verification: DAC and ADC against DMM-01 (+-5 mV)
+    interval_months: 6
+    due: TBD

@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# nanopb 0.4.9.2 options for locksys_app.proto (LS-SAIC-001 section 8.6).
+# Every field is statically allocated: no PB_ENABLE_MALLOC, no callbacks. A string or bytes
+# field without max_size fails generation. PB_BUFFER_ONLY, PB_WITHOUT_64BIT and
+# PB_MESSAGE_NESTING_MAX=4 are public definitions of the CGW nanopb component.
+
+locksys.app.v1.*                        type:FT_STATIC
+
+locksys.app.v1.Frame.body               max_size:224
+locksys.app.v1.Frame.tag                max_size:16
+locksys.app.v1.ServerHello.device_id    max_size:8 fixed_length:true
+locksys.app.v1.ServerHello.server_nonce max_size:16 fixed_length:true
+locksys.app.v1.ClientAuth.client_nonce  max_size:16 fixed_length:true
+locksys.app.v1.ClientAuth.client_id     max_size:16 fixed_length:true
+locksys.app.v1.ClientAuth.client_proof  max_size:32 fixed_length:true
+locksys.app.v1.AuthResult.server_proof  max_size:32 fixed_length:true
+locksys.app.v1.ServerHello.fw_version   max_size:24
+locksys.app.v1.ClientAuth.app_version   max_size:24
+locksys.app.v1.Notice.text              max_size:48

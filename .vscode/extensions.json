@@ -1,0 +1,22 @@
+{
+  "recommendations": [
+    "llvm-vs-code-extensions.vscode-clangd",
+    "marus25.cortex-debug",
+    "iarsystems.iar-build",
+    "iarsystems.iar-debug",
+    "espressif.esp-idf-extension",
+    "dart-code.flutter",
+    "charliermarsh.ruff",
+    "ms-python.python",
+    "ms-python.mypy-type-checker",
+    "ms-vscode-remote.remote-ssh",
+    "github.vscode-github-actions",
+    "editorconfig.editorconfig",
+    "redhat.vscode-yaml",
+    "tamasfe.even-better-toml",
+    "davidanson.vscode-markdownlint",
+    "bierner.markdown-mermaid",
+    "zxh404.vscode-proto3",
+    "timonwong.shellcheck"
+  ]
+}

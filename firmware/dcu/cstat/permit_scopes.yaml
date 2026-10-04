@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Path scopes of the C-STAT permits of the DCU (GEP, deviation process). Each entry maps a
+# permit of docs/08_process/misra/deviations.yaml (kind: permit) to the repository paths and
+# the C-STAT check tags it disables there. The check lists are filled from the first C-STAT
+# baseline on the Lab Host (day-1 checks); until then they are empty and nothing is disabled.
+
+schema_version: 1
+permits:
+  - id: DP-01
+    purpose: CMSIS peripheral base addresses and the ROM checksum range (Rule 11.4)
+    paths: [firmware/dcu/src/mcal/**, firmware/dcu/startup/**, firmware/dcu/src/services/safemon/safemon.c]
+    cstat_tags: []
+  - id: DP-02
+    purpose: Language extensions inside the compiler abstraction (Rule 1.2)
+    paths: [firmware/dcu/src/platform/ls_compiler.h]
+    cstat_tags: []
+  - id: DP-03
+    purpose: Adopted generated code from interfaces/
+    paths: [firmware/dcu/gen/**, libs/ls_common/gen/**]
+    cstat_tags: []
+  - id: DP-04
+    purpose: Function-like macros for compile-time checks, Det and register instances (Dir 4.9)
+    paths:
+      - firmware/dcu/src/platform/ls_compiler.h
+      - firmware/dcu/src/platform/ls_static_assert.h
+      - firmware/dcu/src/services/det/det.h
+      - firmware/dcu/src/mcal/**
+    cstat_tags: []
+  - id: DP-05
+    purpose: Generated Visual State engines
+    paths: [firmware/dcu/gen_vs/release/**]
+    cstat_tags: []

@@ -1,0 +1,160 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# uv workspace root. The system version is defined by the VERSION file; this virtual project
+# is never built or published.
+
+[project]
+name = "locksys"
+dynamic = ["version"]
+description = "LockSys monorepo Python workspace: tooling, HIL framework and simulators."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "locksys-tools",
+  "locksys-hil",
+  "locksys-cgw-sim",
+]
+
+[dependency-groups]
+dev = [
+  "mypy==2.4.0",
+  "pre-commit==4.6.2",
+  "pytest==9.1.1",
+  "pytest-cov==7.1.0",
+  "ruff==0.16.10",
+  "types-jsonschema>=4.26.0.20260518",
+  "types-protobuf>=6.32.1.20260221,<7",
+  "types-PyYAML>=6.0.12.20260906",
+]
+
+[tool.uv]
+package = false
+required-version = ">=0.12.23"
+default-groups = ["dev"]
+
+[tool.uv.workspace]
+members = ["tools", "hil", "tools/simulators/cgw_sim"]
+
+[tool.uv.sources]
+locksys-tools = { workspace = true }
+locksys-hil = { workspace = true }
+locksys-cgw-sim = { workspace = true }
+
+# --------------------------------------------------------------------------------------------
+# Ruff (lint and format)
+# --------------------------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+src = [".", "hil/src", "tools/simulators/cgw_sim/src"]
+extend-exclude = [
+  "third_party",
+  "**/gen",
+  "**/gen_vs",
+  "tools/codegen/.protoc",
+  "app",
+  "firmware/cgw/managed_components",
+]
+
+[tool.ruff.lint]
+select = [
+  "B",    # flake8-bugbear
+  "C4",   # flake8-comprehensions
+  "E",    # pycodestyle errors
+  "F",    # pyflakes
+  "I",    # isort
+  "N",    # pep8-naming
+  "PGH",  # pygrep-hooks
+  "PIE",  # flake8-pie
+  "PT",   # flake8-pytest-style
+  "RUF",  # ruff-specific
+  "SIM",  # flake8-simplify
+  "UP",   # pyupgrade
+  "W",    # pycodestyle warnings
+]
+ignore = [
+  "E501", # line length is handled by the formatter
+]
+allowed-confusables = ["–", "—", "×", "µ"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["tools", "locksys_hil", "locksys_cgw_sim"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+# --------------------------------------------------------------------------------------------
+# mypy (strict for tools and HIL)
+# --------------------------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.13"
+files = ["tools", "hil"]
+mypy_path = [
+  "$MYPY_CONFIG_FILE_DIR",
+  "$MYPY_CONFIG_FILE_DIR/hil/src",
+  "$MYPY_CONFIG_FILE_DIR/tools/simulators/cgw_sim/src",
+]
+explicit_package_bases = true
+exclude = [
+  '(^|/)gen/',
+  '(^|/)build/',
+  '(^|/)\.protoc/',
+  '(^|/)\.venv/',
+]
+strict = true
+warn_unreachable = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+pretty = true
+
+[[tool.mypy.overrides]]
+module = ["locksys_hil.gen.*", "*.gen.*"]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+  "can.*",
+  "cantools.*",
+  "esptool.*",
+  "isotp.*",
+  "pyvisa.*",
+  "pyvisa_py.*",
+  "saleae.*",
+  "serial.*",
+  "udsoncan.*",
+]
+ignore_missing_imports = true
+
+# --------------------------------------------------------------------------------------------
+# pytest and coverage
+# --------------------------------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "9.0"
+# tools/ci/tests is listed explicitly for the CI python job; overlapping paths are
+# collected once.
+testpaths = ["tools", "tools/ci/tests", "hil/unit"]
+pythonpath = ["."]
+addopts = ["-ra", "--strict-markers", "--strict-config", "--import-mode=importlib"]
+xfail_strict = true
+markers = [
+  "verifies(*ids): links a test to the requirement IDs it verifies (traceability)",
+  "test_id(id): test case identifier TST-<level>-<scope>-nnn",
+  "smoke: HIL smoke suite (push to develop)",
+  "regression: HIL regression suite (release and hotfix branches)",
+  "nightly: HIL nightly suite (schedule)",
+  "soak: HIL soak suite (weekly from M5, release candidates)",
+  "hil_sim: runs in the HIL-SIM bench configuration",
+  "hil_real: runs in the HIL-REAL bench configuration (attended)",
+  "requires(*capabilities): bench capabilities the test needs; skipped without them",
+  "dev_build: needs a DEV build (fault injection or trace pins)",
+  "destructive: may stress or damage bench hardware; attended runs only",
+]
+
+[tool.coverage.run]
+branch = true
+omit = ["*/gen/*", "*/tests/*", "*/unit/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

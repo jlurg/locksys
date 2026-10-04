@@ -1,0 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2026 jlurg
+//
+// IAR ILINK stack usage control file of the DCU (Linker > Advanced > Stack usage analysis).
+// Entries are added when the analysis reports unknown call targets or missing roots; the
+// project has no function pointers and no recursion, so none are expected.

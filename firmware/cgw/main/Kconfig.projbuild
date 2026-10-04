@@ -1,0 +1,111 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# LockSys CGW build options (LS-CGW-SAD-001 sections 6, 12 and 13).
+
+menu "LockSys CGW"
+
+    choice CGW_BOARD_REV
+        prompt "ESP32-S3-DevKitC-1 board revision"
+        default CGW_BOARD_REV_V1_1
+        help
+            Selects the GPIO of the on-board addressable RGB LED.
+
+        config CGW_BOARD_REV_V1_1
+            bool "v1.1 (RGB LED on GPIO38)"
+        config CGW_BOARD_REV_V1_0
+            bool "v1.0 (RGB LED on GPIO48)"
+    endchoice
+
+    config CGW_STATUS_LED_GPIO
+        int
+        default 38 if CGW_BOARD_REV_V1_1
+        default 48 if CGW_BOARD_REV_V1_0
+
+    choice CGW_BUILD_TYPE
+        prompt "Build type"
+        default CGW_BUILD_TYPE_DEV
+        help
+            DEV for builds not made from a release tag, RC for release-candidate tags and
+            RELEASE for final tags (ADR 0006). Transmitted in CGW_Version.
+
+        config CGW_BUILD_TYPE_DEV
+            bool "DEV"
+        config CGW_BUILD_TYPE_RC
+            bool "RC"
+        config CGW_BUILD_TYPE_RELEASE
+            bool "RELEASE"
+    endchoice
+
+    config CGW_BUILD_TYPE
+        int
+        default 0 if CGW_BUILD_TYPE_DEV
+        default 1 if CGW_BUILD_TYPE_RC
+        default 2 if CGW_BUILD_TYPE_RELEASE
+
+    config CGW_FAULT_INJECTION
+        bool "Fault-injection console (DEV builds only)"
+        depends on CGW_BUILD_TYPE_DEV
+        default n
+        help
+            Console commands fi core_hang, canio_hang, can_silent, e2e_crc, e2e_ctr, drop_stop
+            and wifi_off for HIL evidence. RC and RELEASE images contain no cgw_fi_ symbol.
+
+    config CGW_WIFI_TRANSITION
+        bool "WPA2/WPA3 transition mode (DEV builds only)"
+        depends on CGW_BUILD_TYPE_DEV
+        default n
+        help
+            WIFI_AUTH_WPA2_WPA3_PSK with PMF capable; pairing QR sec=wpa2wpa3. Never present in
+            RC or RELEASE builds.
+
+    config CGW_WIFI_CHANNEL
+        int "SoftAP channel (1, 6 or 11)"
+        range 1 11
+        default 6
+
+    config CGW_WIFI_COUNTRY
+        string "SoftAP country code"
+        default "01"
+        help
+            ISO 3166 country code set once before esp_wifi_start(); "01" is world-safe.
+
+    config LS_SOFTAP_OFFER_ROUTER
+        bool "Offer the router option in DHCP"
+        default n
+
+    config CGW_CAN_TX_GPIO
+        int "TWAI TX GPIO"
+        default 4
+
+    config CGW_CAN_RX_GPIO
+        int "TWAI RX GPIO"
+        default 5
+
+    config CGW_TRACE_PINS
+        bool "Trace outputs TRACE0..TRACE3"
+        default y
+        help
+            Present in all build types (LS-SAIC-001 section 3.5).
+
+    config CGW_TRACE0_GPIO
+        int "TRACE0 GPIO (RMT width-coded events)"
+        depends on CGW_TRACE_PINS
+        default 7
+
+    config CGW_TRACE1_GPIO
+        int "TRACE1 GPIO (STOP pending)"
+        depends on CGW_TRACE_PINS
+        default 15
+
+    config CGW_TRACE2_GPIO
+        int "TRACE2 GPIO (CGW_WinCmd enqueue)"
+        depends on CGW_TRACE_PINS
+        default 16
+
+    config CGW_TRACE3_GPIO
+        int "TRACE3 GPIO (core dispatch)"
+        depends on CGW_TRACE_PINS
+        default 17
+
+endmenu

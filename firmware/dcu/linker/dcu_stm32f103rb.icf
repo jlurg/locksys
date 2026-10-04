@@ -1,0 +1,47 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* Copyright (c) 2026 jlurg */
+/*
+ * IAR ILINK configuration of the DCU, memory map of LS-DCU-SAD-001 section 11.1:
+ * application flash 0x08000000-0x0801EFFB, ROM CRC word ls_rom_crc at 0x0801EFFC
+ * (linker option --place_holder ls_rom_crc,4,.checksum,4; value written by the post-build
+ * step), reserved flash 0x0801F000-0x0801FFFF; CSTACK 2 KB at the bottom of SRAM so that an
+ * overflow faults, noinit 256 B above it, then data, bss and FAULT_STACK. No heap block.
+ */
+
+define symbol LS_APP_START      = 0x08000000;
+define symbol LS_APP_END        = 0x0801EFFB;
+define symbol LS_ROMCRC_ADDR    = 0x0801EFFC;
+define symbol LS_RAM_START      = 0x20000000;
+define symbol LS_RAM_END        = 0x20004FFF;
+define symbol LS_CSTACK_SIZE    = 0x800;
+define symbol LS_NOINIT_SIZE    = 0x100;
+define symbol LS_FAULTSTACK_SIZE = 0x80;
+
+define symbol LS_NOINIT_START   = LS_RAM_START + LS_CSTACK_SIZE;
+define symbol LS_DATA_START     = LS_NOINIT_START + LS_NOINIT_SIZE;
+
+define memory mem with size = 4G;
+define region APP_region    = mem:[from LS_APP_START to LS_APP_END];
+define region ROMCRC_region = mem:[from LS_ROMCRC_ADDR size 4];
+define region CSTACK_region = mem:[from LS_RAM_START size LS_CSTACK_SIZE];
+define region NOINIT_region = mem:[from LS_NOINIT_START size LS_NOINIT_SIZE];
+define region RAM_region    = mem:[from LS_DATA_START to LS_RAM_END];
+
+define block CSTACK      with alignment = 8, size = LS_CSTACK_SIZE     { };
+define block FAULT_STACK with alignment = 8, size = LS_FAULTSTACK_SIZE { };
+
+initialize by copy { readwrite };
+do not initialize  { section .noinit, section CSTACK, section FAULT_STACK };
+
+place at address mem:LS_APP_START { readonly section .intvec };
+place in APP_region               { readonly };
+place in ROMCRC_region            { readonly section .checksum };
+place in CSTACK_region            { block CSTACK };
+place in NOINIT_region            { section .noinit };
+place in RAM_region               { readwrite, block FAULT_STACK };
+
+keep { section .checksum };
+
+/* The stack must cover main plus every interrupt call-graph root plus a margin. */
+define symbol LS_STACK_MARGIN = 0x100;
+check that size(block CSTACK) >= maxstack("Program entry") + totalstack("interrupt") + LS_STACK_MARGIN;

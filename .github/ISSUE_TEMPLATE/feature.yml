@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+name: Feature
+description: New behaviour or capability, backed by requirements.
+title: "Feature: "
+labels: ["type:feature"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is missing and who needs it.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+    validations:
+      required: true
+  - type: input
+    id: requirements
+    attributes:
+      label: Requirement IDs
+      description: Approved requirements this feature implements (a requirement change is raised first if none exists).
+      placeholder: SYS-021, SWR-CGW-010
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: |
+        - [ ] ...
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - MVP
+        - LATER
+    validations:
+      required: true
+  - type: checkboxes
+    id: interfaces
+    attributes:
+      label: Interfaces affected
+      options:
+        - label: CAN matrix (DBC)
+        - label: APP protocol (protobuf)
+        - label: UART telemetry
+        - label: Enumerations, parameters or DTC catalogue (YAML)
+  - type: checkboxes
+    id: flags
+    attributes:
+      label: Classification
+      options:
+        - label: Safety-relevant
+        - label: Security-relevant

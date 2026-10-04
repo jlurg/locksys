@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# DEV variant: fault injection, console REPL, verbose logging, comprehensive heap and stack checks.
+# idf.py -B build/dev -D SDKCONFIG=build/dev/sdkconfig -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.dev" build
+
+CONFIG_COMPILER_OPTIMIZATION_DEBUG=y
+CONFIG_CGW_BUILD_TYPE_DEV=y
+CONFIG_CGW_FAULT_INJECTION=y
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+CONFIG_LOG_MAXIMUM_LEVEL_DEBUG=y
+CONFIG_HEAP_POISONING_COMPREHENSIVE=y
+CONFIG_FREERTOS_WATCHPOINT_END_OF_STACK=y
+CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y
+CONFIG_ESP_COREDUMP_CAPTURE_DRAM=y

@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# git-cliff configuration: Keep a Changelog layout generated from Conventional Commits.
+# Release preparation: git cliff --unreleased --tag vX.Y.Z --prepend CHANGELOG.md
+# Release notes:       git cliff --latest --strip header
+
+[changelog]
+header = """
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
+project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Entries are
+generated from Conventional Commits with git-cliff during release preparation.
+"""
+body = """
+
+{% if version %}\
+## [{{ version | trim_start_matches(pat="v") }}](https://github.com/jlurg/locksys/releases/tag/{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+## [Unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | striptags | trim | upper_first }}
+
+{% for commit in commits %}\
+- {% if commit.scope %}**{{ commit.scope }}:** {% endif %}\
+{% if commit.breaking %}**breaking:** {% endif %}\
+{{ commit.message | upper_first | trim }}
+{% endfor %}\
+{% endfor %}
+"""
+trim = true
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+split_commits = false
+protect_breaking_commits = true
+filter_commits = false
+tag_pattern = "^v[0-9]+\\.[0-9]+\\.[0-9]+(-rc\\.[0-9]+)?$"
+ignore_tags = "-rc\\.[0-9]+$"
+topo_order = false
+sort_commits = "oldest"
+commit_preprocessors = [
+  { pattern = '\(#([0-9]+)\)', replace = "([#${1}](https://github.com/jlurg/locksys/pull/${1}))" },
+]
+commit_parsers = [
+  { message = "^chore\\(release\\)", skip = true },
+  { message = "^Merge ", skip = true },
+  { message = "^feat", group = "<!-- 0 -->Added" },
+  { message = "^fix", group = "<!-- 3 -->Fixed" },
+  { message = "^revert", group = "<!-- 2 -->Removed" },
+  { message = ".*", group = "<!-- 1 -->Changed" },
+]

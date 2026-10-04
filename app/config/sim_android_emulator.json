@@ -1,0 +1,6 @@
+{
+  "LS_ENV": "sim",
+  "LS_CGW_HOST": "10.0.2.2",
+  "LS_CGW_PORT": "8765",
+  "LS_LOG_LEVEL": "FINE"
+}

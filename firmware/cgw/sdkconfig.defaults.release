@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# RC and RELEASE variant: no fault injection, WPA3 only, reduced logging, no console REPL.
+# The build type (RC or RELEASE) is set from the tag by the release pipeline:
+# idf.py -B build/release -D SDKCONFIG=build/release/sdkconfig -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.release" build
+
+CONFIG_COMPILER_OPTIMIZATION_PERF=y
+CONFIG_CGW_BUILD_TYPE_RELEASE=y
+# CONFIG_CGW_FAULT_INJECTION is not set
+# CONFIG_CGW_WIFI_TRANSITION is not set
+CONFIG_LOG_DEFAULT_LEVEL_WARN=y
+CONFIG_LOG_MAXIMUM_LEVEL_INFO=y
+CONFIG_BOOTLOADER_LOG_LEVEL_WARN=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+CONFIG_HEAP_POISONING_LIGHT=y

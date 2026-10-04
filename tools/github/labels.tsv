@@ -1,0 +1,40 @@
+# name	color	description
+type:feature	a2eeef	New functionality backed by a requirement
+type:bug	d73a4a	Defect in released or integrated behaviour
+type:requirement	5319e7	Requirement change (docs PR before implementation)
+type:hil-failure	b60205	Failure reported by a HIL run
+type:docs	0075ca	Documentation only
+type:ci	1d76db	Workflows, CI scripts and repository automation
+type:chore	cfd3d7	Maintenance
+type:security	ee0701	Security hardening or vulnerability fix
+area:dcu	c5def5	DCU firmware (firmware/dcu)
+area:cgw	c5def5	CGW firmware (firmware/cgw)
+area:app	c5def5	Flutter application (app)
+area:hil	c5def5	HIL framework and bench (hil)
+area:can	c5def5	CAN matrix and generated code
+area:proto	c5def5	APP to CGW protocol
+area:libs	c5def5	Shared C libraries (libs)
+area:docs	c5def5	Documentation (docs)
+area:ci	c5def5	GitHub workflows and CI configuration
+area:tools	c5def5	Repository tools (tools)
+prio:P0	b60205	Blocks the milestone or a safety function
+prio:P1	d93f0b	Required for the current milestone
+prio:P2	fbca04	Planned
+prio:P3	0e8a16	Nice to have
+scope:MVP	0e8a16	Part of the v1.0 MVP
+scope:LATER	bfdadc	Deferred beyond the MVP
+status:blocked	b60205	Waiting for another item
+status:needs-info	fbca04	Waiting for information
+status:ready	0e8a16	Meets the Definition of Ready
+size/XS	3cbf00	Fewer than 10 changed lines
+size/S	5d9801	10 to 99 changed lines
+size/M	7f7203	100 to 399 changed lines
+size/L	a14c05	400 to 799 changed lines
+size/XL	c32607	800 or more changed lines (justify in the summary)
+safety	e11d21	Safety-relevant change: HIL evidence required
+security	d93f0b	Security-relevant change
+interface-change	fef2c0	Changes files under interfaces/
+breaking	b60205	Incompatible interface change (major version)
+dependencies	0366d6	Dependency update
+process-violation	000000	A process rule was bypassed on a protected branch
+break-glass	d93f0b	Ruleset temporarily disabled; audit record

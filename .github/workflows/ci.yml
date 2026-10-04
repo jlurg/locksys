@@ -1,0 +1,635 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Cloud CI. Required check: ci-gate (docs/08_process/ci_cd.md).
+# No path filters on the triggers: path selection happens in job "changes", so ci-gate
+# always reports. Toolchain and image pins are read from tools/versions.env; only tools
+# that file does not list are pinned here.
+name: ci
+
+on:
+  pull_request:
+    branches: [develop, main, 'release/**', 'hotfix/**']
+  push:
+    branches: [develop, main]
+  schedule:
+    - cron: '23 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  LYCHEE_VERSION: 0.24.2
+  LYCHEE_SHA256: 1f4e0ef7f6554a6ed33dd7ac144fb2e1bbed98598e7af973042fc5cd43951c9a
+  # PyPI wrapper of actionlint; its first three components must equal ACTIONLINT.
+  ACTIONLINT_PY: 1.7.12.25
+
+jobs:
+  changes:
+    name: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      lint: ${{ steps.plan.outputs.lint }}
+      codegen: ${{ steps.plan.outputs.codegen }}
+      vs-manifest: ${{ steps.plan.outputs.vs-manifest }}
+      dcu-unit: ${{ steps.plan.outputs.dcu-unit }}
+      dcu-gcc: ${{ steps.plan.outputs.dcu-gcc }}
+      dcu-static: ${{ steps.plan.outputs.dcu-static }}
+      libs-unit: ${{ steps.plan.outputs.libs-unit }}
+      cgw-build: ${{ steps.plan.outputs.cgw-build }}
+      cgw-unit: ${{ steps.plan.outputs.cgw-unit }}
+      app: ${{ steps.plan.outputs.app }}
+      python: ${{ steps.plan.outputs.python }}
+      docs: ${{ steps.plan.outputs.docs }}
+      workflow-lint: ${{ steps.plan.outputs.workflow-lint }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Classify changed paths
+        id: filter
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          filters: .github/filters.yml
+      - name: Select jobs
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          CHANGES: ${{ toJSON(steps.filter.outputs) }}
+        run: |
+          force=false
+          if [ "$EVENT" != pull_request ] || [ "$(jq -r '.ci // "false"' <<<"$CHANGES")" = true ]; then
+            force=true
+          fi
+          printf '| Job | Relevant | Runs |\n|---|---|---|\n' >> "$GITHUB_STEP_SUMMARY"
+          # decide <job> <comma-separated filters, or empty for always> <required path or glob>...
+          decide() {
+            local job="$1" filters="$2" relevant=true missing="" marker
+            shift 2
+            if [ "$force" != true ] && [ -n "$filters" ]; then
+              relevant=$(jq -r --arg f "$filters" \
+                '. as $c | [($f | split(","))[] | ($c[.] // "false")] | any(. == "true")' <<<"$CHANGES")
+            fi
+            for marker in "$@"; do
+              compgen -G "$marker" > /dev/null || missing="$missing $marker"
+            done
+            local run=false
+            if [ "$relevant" = true ] && [ -z "$missing" ]; then
+              run=true
+            elif [ "$relevant" = true ]; then
+              echo "::notice title=$job not run::missing:$missing"
+            fi
+            echo "$job=$run" >> "$GITHUB_OUTPUT"
+            printf '| %s | %s | %s |\n' "$job" "$relevant" "$run" >> "$GITHUB_STEP_SUMMARY"
+          }
+          decide lint "" .pre-commit-config.yaml
+          decide codegen codegen tools/codegen/regen.py
+          decide vs-manifest dcu tools/vs/vs_manifest.py
+          decide dcu-unit dcu firmware/dcu/project.yml tools/docker/ceedling/run.sh
+          decide dcu-gcc dcu firmware/dcu/CMakeLists.txt firmware/dcu/cmake/arm-none-eabi-gcc.cmake
+          decide dcu-static dcu firmware/dcu/src
+          decide libs-unit libs 'libs/*/project.yml' tools/docker/ceedling/run.sh
+          decide cgw-build cgw firmware/cgw/CMakeLists.txt
+          decide cgw-unit cgw firmware/cgw/test/host/project.yml tools/docker/ceedling/run.sh
+          decide app app app/pubspec.yaml
+          decide python python pyproject.toml
+          decide docs docs docs
+          decide workflow-lint ci,powershell .github/workflows
+
+  lint:
+    name: lint
+    needs: changes
+    if: needs.changes.outputs.lint == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Load the uv pin
+        run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ env.UV }}
+          enable-cache: true
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+      - name: pre-commit
+        env:
+          SKIP: no-commit-to-branch,dart-format
+        run: uv run --locked --only-group dev pre-commit run --all-files --show-diff-on-failure
+
+  codegen:
+    name: codegen
+    needs: changes
+    if: needs.changes.outputs.codegen == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Load the uv pin
+        run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ env.UV }}
+          enable-cache: true
+      - name: Load pins
+        run: grep -E '^(FLUTTER|FLUTTER_SHA256_LINUX_X64|DART_PROTOC_PLUGIN)=' tools/versions.env >> "$GITHUB_ENV"
+      - name: Install Dart (pinned Flutter archive, SHA-256 checked) and protoc_plugin
+        run: |
+          : "${FLUTTER:?}" "${FLUTTER_SHA256_LINUX_X64:?}" "${DART_PROTOC_PLUGIN:?}"
+          archive="$RUNNER_TEMP/flutter.tar.xz"
+          curl -fsSLo "$archive" \
+            "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER}-stable.tar.xz"
+          echo "${FLUTTER_SHA256_LINUX_X64}  ${archive}" | sha256sum --check --strict -
+          tar -xJf "$archive" -C "$RUNNER_TEMP"
+          rm -f "$archive"
+          "$RUNNER_TEMP/flutter/bin/dart" --disable-analytics
+          "$RUNNER_TEMP/flutter/bin/dart" pub global activate protoc_plugin "$DART_PROTOC_PLUGIN"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.pub-cache/bin" >> "$GITHUB_PATH"
+      - name: Regenerate and compare
+        run: uv run --locked tools/codegen/regen.py --check
+
+  vs-manifest:
+    name: vs-manifest
+    needs: changes
+    if: needs.changes.outputs.vs-manifest == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Load the uv pin
+        run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ env.UV }}
+          enable-cache: true
+      - name: Visual State model and generated code agree
+        run: uv run --locked tools/vs/vs_manifest.py --check
+
+  dcu-unit:
+    name: dcu-unit
+    needs: changes
+    if: needs.changes.outputs.dcu-unit == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Load the uv pin
+        run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ env.UV }}
+          enable-cache: true
+      - name: Load pins
+        run: grep -E '^CEEDLING_IMAGE=' tools/versions.env >> "$GITHUB_ENV"
+      - name: Build the Ceedling image
+        run: docker build --tag "$CEEDLING_IMAGE" tools/docker/ceedling
+      - name: Unit tests and coverage gate
+        run: tools/ci/ceedling_ci.sh dcu firmware/dcu
+
+  dcu-gcc:
+    name: dcu-gcc
+    needs: changes
+    if: needs.changes.outputs.dcu-gcc == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Load the uv pin
+        run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ env.UV }}
+          enable-cache: true
+      - name: Load pins
+        run: |
+          arm_gcc=$(sed -n 's/^ARM_GCC=//p' tools/versions.env)
+          if [ -z "$arm_gcc" ]; then
+            echo "::error::ARM_GCC missing in tools/versions.env"
+            exit 1
+          fi
+          # Release names of the Arm GNU Toolchain use "Rel" (13.3.Rel1).
+          echo "ARM_GCC=$arm_gcc" >> "$GITHUB_ENV"
+          echo "ARM_GCC_RELEASE=${arm_gcc/rel/Rel}" >> "$GITHUB_ENV"
+      - uses: carlosperate/arm-none-eabi-gcc-action@98c40e51546516419841748d3210c290df0d2c6c # v1.13.0
+        with:
+          release: ${{ env.ARM_GCC_RELEASE }}
+      - name: Check the installed toolchain
+        run: |
+          actual=$(arm-none-eabi-gcc --version | head -n 1)
+          echo "$actual"
+          if ! grep -qiF "$ARM_GCC" <<<"$actual"; then
+            echo "::error::arm-none-eabi-gcc does not report ARM_GCC=$ARM_GCC"
+            exit 1
+          fi
+      - name: Configure and build
+        run: >-
+          cmake -S firmware/dcu -B build/dcu-gcc -G Ninja
+          -DCMAKE_TOOLCHAIN_FILE=firmware/dcu/cmake/arm-none-eabi-gcc.cmake
+          && cmake --build build/dcu-gcc
+      - name: Size report
+        run: |
+          mapfile -t images < <(find build/dcu-gcc -name '*.elf' | sort)
+          if [ "${#images[@]}" -eq 0 ]; then
+            echo "::error::no ELF image produced"
+            exit 1
+          fi
+          {
+            echo '## DCU GCC shadow build size'
+            echo '```text'
+            arm-none-eabi-size "${images[@]}"
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+  dcu-static:
+    name: dcu-static
+    needs: changes
+    if: needs.changes.outputs.dcu-static == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Load the uv pin
+        run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ env.UV }}
+          enable-cache: true
+      - name: Complexity limits (lizard)
+        run: |
+          paths=()
+          for dir in firmware/dcu/src firmware/dcu/cfg libs/*/src; do
+            if [ -d "$dir" ]; then
+              paths+=("$dir")
+            fi
+          done
+          uv run tools/ci/complexity_gate.py --summary "$GITHUB_STEP_SUMMARY" "${paths[@]}"
+      - name: Layer dependencies
+        if: hashFiles('tools/arch/check_layers.py') != ''
+        run: uv run --locked tools/arch/check_layers.py
+
+  libs-unit:
+    name: libs-unit
+    needs: changes
+    if: needs.changes.outputs.libs-unit == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Load the uv pin
+        run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ env.UV }}
+          enable-cache: true
+      - name: Load pins
+        run: grep -E '^CEEDLING_IMAGE=' tools/versions.env >> "$GITHUB_ENV"
+      - name: Build the Ceedling image
+        run: docker build --tag "$CEEDLING_IMAGE" tools/docker/ceedling
+      - name: Unit tests and coverage gate
+        run: |
+          mapfile -t projects < <(find libs -mindepth 2 -maxdepth 2 -name project.yml -printf '%h\n' | sort)
+          tools/ci/ceedling_ci.sh libs "${projects[@]}"
+
+  cgw-build:
+    name: cgw-build
+    needs: changes
+    if: needs.changes.outputs.cgw-build == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Load pins
+        run: |
+          image=$(sed -n 's/^ESP_IDF_IMAGE=//p' tools/versions.env)
+          if [[ "$image" != *@sha256:* ]]; then
+            echo "::error::ESP_IDF_IMAGE in tools/versions.env is not pinned by digest"
+            exit 1
+          fi
+          echo "ESP_IDF_IMAGE=$image" >> "$GITHUB_ENV"
+      - name: ESP-IDF build and size
+        run: >-
+          docker run --rm -e IDF_GIT_SAFE_DIR=/project
+          -v "$PWD":/project -w /project/firmware/cgw
+          "$ESP_IDF_IMAGE" idf.py build size
+      - name: Release configuration without fault-injection symbols
+        # RC and RELEASE images must not contain cgw_fi_ symbols (docs/08_process/release_process.md).
+        run: |
+          docker run --rm -e IDF_GIT_SAFE_DIR=/project \
+            -v "$PWD":/project -w /project/firmware/cgw \
+            "$ESP_IDF_IMAGE" bash -euo pipefail -c '
+              out=/tmp/cgw-release
+              idf.py -B "$out" -D SDKCONFIG="$out/sdkconfig" \
+                -D "SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.defaults.release" build
+              if ! grep -qx "CONFIG_CGW_BUILD_TYPE_RELEASE=y" "$out/sdkconfig" \
+                || grep -qx "CONFIG_CGW_FAULT_INJECTION=y" "$out/sdkconfig"; then
+                echo "::error file=firmware/cgw/sdkconfig.defaults.release::not a release configuration"
+                exit 1
+              fi
+              xtensa-esp32s3-elf-nm "$out/locksys_cgw.elf" > "$out/symbols.txt"
+              if grep -F cgw_fi_ "$out/symbols.txt"; then
+                echo "::error::release image contains cgw_fi_ symbols"
+                exit 1
+              fi
+              echo "release image: no cgw_fi_ symbols"'
+
+  cgw-unit:
+    name: cgw-unit
+    needs: changes
+    if: needs.changes.outputs.cgw-unit == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Load the uv pin
+        run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ env.UV }}
+          enable-cache: true
+      - name: Load pins
+        run: grep -E '^CEEDLING_IMAGE=' tools/versions.env >> "$GITHUB_ENV"
+      - name: Build the Ceedling image
+        run: docker build --tag "$CEEDLING_IMAGE" tools/docker/ceedling
+      - name: Host unit tests and coverage gate
+        run: tools/ci/ceedling_ci.sh cgw firmware/cgw/test/host
+
+  app:
+    name: app
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Load the uv pin
+        run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ env.UV }}
+          enable-cache: true
+      - name: Load pins
+        run: grep -E '^(FLUTTER|FLUTTER_SHA256_LINUX_X64)=' tools/versions.env >> "$GITHUB_ENV"
+      - name: Install Flutter (pinned archive, SHA-256 checked)
+        run: |
+          : "${FLUTTER:?FLUTTER missing in tools/versions.env}" "${FLUTTER_SHA256_LINUX_X64:?missing in tools/versions.env}"
+          archive="$RUNNER_TEMP/flutter.tar.xz"
+          curl -fsSLo "$archive" \
+            "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER}-stable.tar.xz"
+          echo "${FLUTTER_SHA256_LINUX_X64}  ${archive}" | sha256sum --check --strict -
+          tar -xJf "$archive" -C "$RUNNER_TEMP"
+          rm -f "$archive"
+          "$RUNNER_TEMP/flutter/bin/flutter" config --no-analytics
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Check the Flutter pins
+        run: |
+          installed=$(flutter --version --machine 2>/dev/null | jq -r '.frameworkVersion')
+          fvmrc=$(jq -r '.flutter' app/.fvmrc)
+          echo "installed=$installed app/.fvmrc=$fvmrc tools/versions.env=$FLUTTER"
+          if [ "$installed" != "$FLUTTER" ] || [ "$fvmrc" != "$FLUTTER" ]; then
+            echo "::error::Flutter versions disagree"
+            exit 1
+          fi
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('app/**/pubspec.lock') }}
+      - name: Version matches VERSION
+        run: |
+          # X.Y.Z of app/pubspec.yaml (before '+') must equal X.Y.Z of VERSION (before '-').
+          core() { local v="${1%%+*}"; printf '%s' "${v%%-*}"; }
+          system=$(head -n 1 VERSION | tr -d '[:space:]')
+          pubspec=$(sed -n 's/^version:[[:space:]]*\([^#[:space:]]*\).*/\1/p' app/pubspec.yaml | tr -d "\"'")
+          echo "VERSION=$system app/pubspec.yaml=$pubspec"
+          if [ -z "$system" ] || [ -z "$pubspec" ] || [ "$(core "$pubspec")" != "$(core "$system")" ]; then
+            echo "::error file=app/pubspec.yaml::version '$pubspec' does not match VERSION '$system'"
+            exit 1
+          fi
+      - name: Flutter projects (application and local packages)
+        run: |
+          projects=app
+          for pubspec in app/packages/*/pubspec.yaml; do
+            if [ -f "$pubspec" ]; then
+              projects="$projects ${pubspec%/pubspec.yaml}"
+            fi
+          done
+          echo "Flutter projects: $projects"
+          echo "FLUTTER_PROJECTS=$projects" >> "$GITHUB_ENV"
+      - name: Dependencies
+        run: |
+          read -ra projects <<<"$FLUTTER_PROJECTS"
+          for project in "${projects[@]}"; do
+            if [ ! -f "$project/pubspec.lock" ]; then
+              echo "::error file=$project/pubspec.yaml::pubspec.lock is not committed"
+              exit 1
+            fi
+            echo "::group::$project"
+            (cd "$project" && flutter pub get --enforce-lockfile)
+            echo "::endgroup::"
+          done
+      - name: Format (generated code excluded)
+        working-directory: app
+        run: |
+          find . -name '*.dart' \
+            -not -path '*/gen/*' -not -path '*/.dart_tool/*' -not -path '*/build/*' \
+            -not -name '*.g.dart' -not -name '*.pb*.dart' -print0 \
+            | xargs -0 --no-run-if-empty dart format --output=none --set-exit-if-changed
+      - name: Analyze
+        run: |
+          read -ra projects <<<"$FLUTTER_PROJECTS"
+          status=0
+          for project in "${projects[@]}"; do
+            echo "::group::$project"
+            (cd "$project" && flutter analyze --fatal-infos) || status=1
+            echo "::endgroup::"
+          done
+          exit "$status"
+      - name: Test
+        run: |
+          read -ra projects <<<"$FLUTTER_PROJECTS"
+          status=0
+          for project in "${projects[@]}"; do
+            if [ ! -d "$project/test" ]; then
+              echo "::notice::$project/test does not exist yet"
+              continue
+            fi
+            echo "::group::$project"
+            (cd "$project" && flutter test --coverage) || status=1
+            echo "::endgroup::"
+          done
+          exit "$status"
+      - name: Coverage report
+        run: |
+          read -ra projects <<<"$FLUTTER_PROJECTS"
+          args=()
+          for project in "${projects[@]}"; do
+            if [ -f "$project/coverage/lcov.info" ]; then
+              args+=(--prefixed-report "$project" "$project/coverage/lcov.info")
+            fi
+          done
+          if [ "${#args[@]}" -eq 0 ]; then
+            echo "::notice::no Flutter coverage report produced"
+            exit 0
+          fi
+          uv run tools/ci/coverage_gate.py --component app "${args[@]}" --summary "$GITHUB_STEP_SUMMARY"
+
+  python:
+    name: python
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Load the uv pin
+        run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ env.UV }}
+          enable-cache: true
+      - name: Environment
+        run: uv sync --locked --all-packages
+      - name: Ruff
+        run: uv run --no-sync ruff check .
+      - name: mypy
+        run: uv run --no-sync mypy
+      - name: pytest
+        run: uv run --no-sync pytest
+      - name: pytest (CI gates)
+        run: |
+          if ! grep -q 'tools/ci/tests' pyproject.toml; then
+            uv run --no-sync pytest tools/ci/tests
+          fi
+
+  docs:
+    name: docs
+    needs: changes
+    if: needs.changes.outputs.docs == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Load the uv pin
+        run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ env.UV }}
+          enable-cache: true
+      - name: Install lychee (pinned archive, SHA-256 checked)
+        run: |
+          archive="$RUNNER_TEMP/lychee.tar.gz"
+          curl -fsSLo "$archive" \
+            "https://github.com/lycheeverse/lychee/releases/download/lychee-v${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz"
+          echo "${LYCHEE_SHA256}  ${archive}" | sha256sum --check --strict -
+          tar -xzf "$archive" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/lychee-x86_64-unknown-linux-gnu" >> "$GITHUB_PATH"
+      - name: Relative links
+        run: >-
+          lychee --offline --no-progress
+          --exclude-path third_party --exclude-path build --exclude-path app/build
+          './**/*.md'
+      - name: Trace report
+        if: hashFiles('tools/trace/trace.py') != ''
+        run: uv run --locked tools/trace/trace.py --report
+
+  workflow-lint:
+    name: workflow-lint
+    needs: changes
+    if: needs.changes.outputs.workflow-lint == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Load the uv pin
+        run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ env.UV }}
+          enable-cache: true
+      - name: Load pins
+        run: |
+          grep -E '^(ACTIONLINT|ZIZMOR)=' tools/versions.env >> "$GITHUB_ENV"
+          actionlint=$(sed -n 's/^ACTIONLINT=//p' tools/versions.env)
+          if [[ "$ACTIONLINT_PY" != "$actionlint".* ]]; then
+            echo "::error::actionlint-py $ACTIONLINT_PY does not wrap ACTIONLINT=$actionlint"
+            exit 1
+          fi
+      - name: actionlint
+        run: uvx --from "actionlint-py==${ACTIONLINT_PY}" actionlint
+      - name: zizmor
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: uvx "zizmor==${ZIZMOR}" --format=github .github/workflows
+      - name: Self-hosted trigger policy
+        run: uv run tools/ci/check_self_hosted.py
+      - name: PowerShell scripts (parse, PSScriptAnalyzer, Pester)
+        shell: pwsh
+        run: ./tools/labhost/tests/Invoke-LabhostChecks.ps1
+
+  ci-gate:
+    name: ci-gate
+    if: always()
+    needs:
+      - changes
+      - lint
+      - codegen
+      - vs-manifest
+      - dcu-unit
+      - dcu-gcc
+      - dcu-static
+      - libs-unit
+      - cgw-build
+      - cgw-unit
+      - app
+      - python
+      - docs
+      - workflow-lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Evaluate job results
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          jq -r 'to_entries[] | "\(.key): \(.value.result)"' <<<"$NEEDS"
+          jq -e '(.changes.result == "success") and ([.[].result] | all(. == "success" or . == "skipped"))' \
+            <<<"$NEEDS" > /dev/null

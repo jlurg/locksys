@@ -1,0 +1,122 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Install (pre-commit and commit-msg hooks): uv run pre-commit install --install-hooks
+# CI lint job: SKIP=no-commit-to-branch,dart-format uv run pre-commit run --all-files
+# CI secret scan:  uv run pre-commit run --hook-stage manual gitleaks-repo --all-files
+# Hook revisions are kept current by Dependabot (pre-commit ecosystem).
+minimum_pre_commit_version: "4.0.0"
+default_install_hook_types: [pre-commit, commit-msg]
+default_stages: [pre-commit]
+exclude: '(^|/)(gen|gen_vs|vendor|third_party)/'
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: end-of-file-fixer
+        exclude: '\.(ew[pwdt]|vs[prt]|vssm|vste|vnw|vws|vxlg|vtg)$'
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+        exclude: '\.(ew[pwdt]|vs[prt]|vssm|vste|vnw|vws|vxlg|vtg)$'
+      - id: mixed-line-ending
+        args: [--fix=no]
+        exclude: '\.(ew[pwdt]|vs[prt]|vssm|vste|vnw|vws|vxlg|vtg)$'
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: detect-private-key
+      - id: check-added-large-files
+        args: [--maxkb=512]
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, develop, --pattern, 'release/.*', --pattern, 'hotfix/.*']
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v23.1.2
+    hooks:
+      - id: clang-format
+        types_or: [c]
+        files: ^(firmware|libs)/
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.10
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+      # The staged-only hook above sees nothing in a clean CI checkout; this
+      # manual-stage alias scans all tracked content (full history locally, the
+      # shallow checkout in CI).
+      - id: gitleaks
+        alias: gitleaks-repo
+        name: Detect hardcoded secrets (repository)
+        entry: gitleaks git --redact --verbose
+        stages: [manual]
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+      - id: actionlint
+
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.30.1
+    hooks:
+      - id: zizmor
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.38.2
+    hooks:
+      - id: check-github-workflows
+      - id: check-dependabot
+      - id: check-github-issue-forms
+      - id: check-github-issue-config
+      - id: check-jsonschema
+        name: validate Claude Code settings
+        files: ^\.claude/settings\.json$
+        args: [--schemafile, 'https://json.schemastore.org/claude-code-settings.json']
+
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.50.3
+    hooks:
+      - id: typos
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.23.3
+    hooks:
+      - id: markdownlint-cli2
+
+  - repo: local
+    hooks:
+      - id: no-ai-attribution
+        name: no AI attribution in the commit message
+        entry: python tools/git/ai_attribution.py --commit-msg
+        language: python
+        stages: [commit-msg]
+      - id: conventional-commit-msg
+        name: Conventional Commits message
+        entry: python tools/git/conventions.py commit-msg
+        language: python
+        stages: [commit-msg]
+      - id: dbc-ascii
+        name: DBC files are ASCII only
+        entry: python3 tools/codegen/check_ascii.py
+        language: system
+        files: '\.dbc$'
+      - id: dart-format
+        name: dart format
+        entry: bash -c 'cd app && exec fvm dart format --set-exit-if-changed "${@#app/}"' --
+        language: system
+        files: '^app/.*\.dart$'

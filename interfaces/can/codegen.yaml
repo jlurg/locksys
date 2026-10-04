@@ -1,0 +1,78 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Output manifest of every LockSys code generator (LS-SAIC-001 section 1.5).
+# One command regenerates every output: uv run tools/codegen/regen.py
+# The CI gate runs: uv run tools/codegen/regen.py --check
+# Paths are relative to the repository root. Generated files are committed, start with a
+# DO NOT EDIT line and are never edited by hand.
+
+version: 1
+
+# Interface artefacts that must equal the normative listings and tables of the contract.
+contract:
+  document: docs/02_system/LS-SAIC.md
+
+can:
+  dbc: interfaces/can/locksys.dbc
+  # cantools 44.1.0 C generator settings (--no-floating-point-numbers, --prune).
+  cantools_version: 44.1.0
+  floating_point_numbers: false
+  bit_fields: false
+  prune_choices: true
+  # ISO-TP frames carry no signals and are excluded from signal code generation.
+  exclude_messages: [DIAG_DcuReq, DIAG_DcuResp]
+  nodes:
+    - node: DCU
+      database_name: locksys_dcu
+      output_dir: firmware/dcu/gen
+    - node: CGW
+      database_name: locksys_cgw
+      output_dir: firmware/cgw/components/cgw_com/gen
+      # GCC/clang: '#pragma GCC diagnostic ignored "-Wunused-function"' in the generated source,
+      # so the file builds under -Wall -Wextra -Werror without per-file compiler options.
+      suppress_unused_function: true
+  # Frame attributes (IDs, DLC, cycle, gap, repetitions, E2E, RX timeout) for both nodes.
+  matrix_header: libs/ls_common/gen/ls_can_matrix_gen.h
+
+proto:
+  source: interfaces/proto/locksys/app/v1/locksys_app.proto
+  options: interfaces/proto/locksys/app/v1/locksys_app.options
+  protoc_version: "33.6"
+  nanopb:
+    generator: third_party/nanopb-0.4.9.2/generator/nanopb_generator.py
+    output_dir: firmware/cgw/components/cgw_proto/gen
+  python:
+    output_dir: hil/src/locksys_hil/gen
+  # Generated only when protoc-gen-dart (protoc_plugin 25.1.0) is available; skipped otherwise.
+  dart:
+    output_dir: app/packages/locksys_protocol/lib/src/gen
+    protoc_plugin_version: 25.1.0
+
+enums:
+  source: interfaces/enums/locksys_enums.yaml
+  c_header: libs/ls_common/gen/ls_enums_gen.h
+  python: hil/src/locksys_hil/gen/enums.py
+
+params:
+  source: interfaces/params/timing.yaml
+  c_header: libs/ls_common/gen/ls_params_gen.h
+  python: hil/src/locksys_hil/gen/params.py
+  dart: app/packages/locksys_protocol/lib/src/gen/ls_params.dart
+
+dtc:
+  source: interfaces/dtc/dtc_catalog.yaml
+  c_header: libs/ls_common/gen/ls_dtc_gen.h
+  dcu_table: firmware/dcu/gen/dem_dtc_gen
+  python: hil/src/locksys_hil/gen/dtc.py
+  dart: app/packages/locksys_protocol/lib/src/gen/ls_dtc.dart
+
+vectors:
+  e2e: interfaces/vectors/e2e_v1.json
+  app_session: interfaces/vectors/app_session_v1.json
+  crypto_kat: interfaces/vectors/crypto_kat.json
+  # C form of the E2E vectors for the libs/ls_e2e unit tests.
+  e2e_c_header: libs/ls_e2e/test/gen/ls_e2e_vectors_gen.h
+
+uart:
+  document: interfaces/uart/telemetry_v1.md

@@ -1,0 +1,60 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Lab Host bench (Windows 11, runner "hil"). Placeholders "TBD-*" are replaced with the
+# identities recorded in the bench qualification report. Secrets are never stored here; the
+# keyring entries named under "secrets" hold them.
+schema_version: 1
+name: lab-win-01
+configuration: SIM
+# Framework lock, writable by the runner account. The manual reservation file
+# C:\labhost\bench.lock is a different file: the runner can only read it.
+lock_file: 'C:\labhost\runners\hil\locksys-hil-bench.lock'
+evidence_dir: 'C:\labhost\evidence'
+capabilities: [dcu, cgw, can, psu.kl30, psu.kl30_sense, logic.16ch, stimulus, wifi]
+dcu:
+  stlink_serial: TBD-STLINK-SERIAL
+  vcp:
+    usb_serial: TBD-STLINK-SERIAL
+    baudrate: 115200
+  lock_en_diag_option: A
+cgw:
+  console:
+    usb_serial: TBD-DEVKITC-UART-SERIAL
+    baudrate: 115200
+  ws_url: ws://192.168.4.1:80/ws/v1
+can:
+  interface: pcan
+  channel: PCAN_USBBUS1
+  device_id: TBD-PCAN-DEVICE-ID
+  bitrate: 500000
+psu:
+  driver: scpi
+  resource: TCPIP0::TBD-PSU-ADDRESS::INSTR
+  backend: "@py"
+  identity: TBD-PSU-SERIAL
+  kl30_channel: 1
+  kl30_sense_channel: 2
+  kl30_current_limit_a: 3.0
+logic:
+  driver: saleae
+  host: 127.0.0.1
+  port: 10430
+  device_id: TBD-LOGIC-DEVICE-ID
+  channels: 16
+stimulus:
+  driver: serial
+  control:
+    usb_serial: TBD-STIMULUS-SERIAL
+    interface: 0
+  events:
+    usb_serial: TBD-STIMULUS-SERIAL
+    interface: 2
+  protocol_major: 1
+wifi:
+  interface: LockSys-WLAN-DUT
+secrets:
+  keyring_service: locksys-hil
+  k_pair: k_pair
+  client_id: client_id
+  wifi_passphrase: wifi_passphrase

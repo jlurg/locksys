@@ -1,0 +1,8 @@
+# title	due_on (ISO 8601 or -)	description
+M0 Foundation	-	Repository, governance, CI, interfaces v1.0 with code generation, shared libraries, skeletons, process documents and ADRs. Exit: a test PR passes pr-policy and ci-gate; an IAR test project produces a C-STAT report on the Lab Host runner; a commit with AI attribution is rejected locally and in CI; the code generation check is clean; day-1 checks recorded.
+M1 DCU platform	-	MCAL, scheduler, watchdog manager, Com with E2E, telemetry, ROM CRC. Exit: NodeSts every 100 ms within 10 %; E2E vectors pass on host and target; a hung task switches the outputs off within 100 ms; zero open C-STAT findings.
+M2 DCU features	-	Visual State models WinCtrl, DoorCtrl and ModeMgr with adapters, encoder supervision, TempMon, Dem, UDS-lite, restbus tests on hardware. Exit: the window motor turns while the CAN command is held and stops when released; DCU trace gate blocking.
+M3 CGW	-	SoftAP with WPA3, authenticated WebSocket, command arbiter, TWAI, pairing, APP simulator. Exit: SYS-020, SYS-021 and SYS-050 to SYS-056 verified.
+M4 APP	-	Android application complete, iOS with manual Wi-Fi join. Exit: SYS-095 and SYS-096 verified; release-to-stop time of at most 150 ms measured.
+M5 HIL and integration	-	Stimulus firmware, HIL framework with about 20 automated tests, hil-gate. Exit: 3 consecutive green nightly runs and a passed soak run.
+M6 Release hardening	-	DCU hardening, evidence pack, safety and security cases, demonstration video. Exit: v1.0.0 published as an immutable release with its evidence pack; release checklist complete.

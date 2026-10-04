@@ -1,0 +1,87 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Dependabot version updates: monthly, one grouped pull request per ecosystem, with a
+# cooldown so that new releases age before they are proposed. Pull requests target the
+# default branch (develop). Container digests used in workflows (ESP-IDF) and vendored
+# code under third_party/ are updated manually with an ADR.
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci
+      include: scope
+    labels: [dependencies, "area:ci"]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      python:
+        patterns: ["*"]
+    commit-message:
+      prefix: build
+      prefix-development: build
+      include: scope
+    labels: [dependencies, "area:tools"]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: pre-commit
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      pre-commit:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci
+      include: scope
+    labels: [dependencies, "area:ci"]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: pub
+    directories:
+      - /app
+      - /app/packages/*
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      dart:
+        patterns: ["*"]
+    commit-message:
+      prefix: build
+      include: scope
+    labels: [dependencies, "area:app"]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: docker
+    directory: /tools/docker/ceedling
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      ceedling-image:
+        patterns: ["*"]
+    commit-message:
+      prefix: build
+      include: scope
+    labels: [dependencies, "area:tools"]
+    open-pull-requests-limit: 5

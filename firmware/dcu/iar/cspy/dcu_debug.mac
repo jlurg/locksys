@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2026 jlurg
+//
+// C-SPY setup macro of the Debug configuration: the IWDG counter stops while the core is
+// halted (DBGMCU_CR.DBG_IWDG_STOP, RM0008 section 31.16.3), so a breakpoint does not reset the
+// MCU. The Hil and Release configurations do not load this macro.
+
+__var ls_dbgmcu_cr;
+
+ls_StopIwdgInDebug()
+{
+  ls_dbgmcu_cr = __readMemory32(0xE0042004, "Memory");
+  __writeMemory32(ls_dbgmcu_cr | 0x00000100, 0xE0042004, "Memory");
+}
+
+execUserSetup()
+{
+  ls_StopIwdgInDebug();
+}
+
+execUserReset()
+{
+  ls_StopIwdgInDebug();
+}

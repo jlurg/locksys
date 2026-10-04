@@ -1,0 +1,49 @@
+###############################################################################
+#
+# IAR ELF Linker V9.70.4.477/W64 for ARM
+# Copyright 2007-2026 IAR Systems AB.
+#
+#    Output file  =  out\Release\dcu.out
+#    Map file     =  out\Release\dcu.map
+#
+###############################################################################
+
+*******************************************************************************
+*** HEAP SELECTION
+***
+
+No heap is used: no module calls malloc, calloc, realloc or free.
+
+
+*******************************************************************************
+*** MODULE SUMMARY
+***
+
+    Module          ro code  ro data  rw data
+    ------          -------  -------  -------
+    main.o               24
+    win_ctrl.o          512        8       16
+
+
+*******************************************************************************
+*** ENTRY LIST
+***
+
+Entry                       Address   Size  Type      Object
+-----                       -------   ----  ----      ------
+.iar.init_table$$Base   0x800'0130           --   Gb  - Linker created -
+?main                   0x800'0141          Code  Gb  cmain.o [4]
+CSTACK$$Base            0x2000'0008           --   Gb  - Linker created -
+WinCtrl_Main10ms        0x800'0201   0x84  Code  Gb  win_ctrl.o [1]
+WinCtrl_SomeHelperWithAVeryLongNameThatWraps
+                        0x800'0285   0x12  Code  Gb  win_ctrl.o [1]
+main                    0x800'0151   0x18  Code  Gb  main.o [1]
+
+[1] = out\Release\Obj
+[4] = rt7M_tl.a
+
+  1'234 bytes of readonly  code memory
+     16 bytes of readwrite data memory
+
+Errors: none
+Warnings: none

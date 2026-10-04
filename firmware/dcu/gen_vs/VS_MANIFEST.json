@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "model_present": false,
+  "visual_state_version": null,
+  "coder_options": {
+    "release": "firmware/dcu/model/visualstate/options/coder_release.opt",
+    "debug": "firmware/dcu/model/visualstate/options/coder_debug.opt"
+  },
+  "model_sha256": null,
+  "gen_sha256": {
+    "release": null,
+    "debug": null
+  },
+  "files": {
+    "model": {},
+    "gen": {}
+  },
+  "verificator": {}
+}

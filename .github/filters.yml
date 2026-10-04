@@ -1,0 +1,86 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Path filters for dorny/paths-filter (ci.yml job "changes", dcu-iar.yml job "changes").
+# A filter is true when at least one changed file matches one of its globs.
+# Filter "ci" forces every job of ci.yml.
+
+ci:
+  - '.github/**'
+  - 'tools/ci/**'
+  - 'tools/versions.env'
+
+dcu:
+  - 'firmware/dcu/**'
+  - 'libs/**'
+  - 'interfaces/**'
+  - 'third_party/cmsis_core-*/**'
+  - 'third_party/cmsis_device_f1-*/**'
+  - 'tools/arch/**'
+  - 'tools/ci/**'
+  - 'tools/cstat/**'
+  - 'tools/docker/ceedling/**'
+  - 'tools/romcrc/**'
+  - 'tools/version/**'
+  - 'tools/vs/**'
+  - 'tools/versions.env'
+  - 'VERSION'
+  - '.github/workflows/dcu-iar.yml'
+  - '.github/workflows/_iar-build.yml'
+  - 'docs/08_process/misra/deviations.yaml'
+
+libs:
+  - 'libs/**'
+  - 'interfaces/vectors/**'
+  - 'tools/docker/ceedling/**'
+
+cgw:
+  - 'firmware/cgw/**'
+  - 'libs/**'
+  - 'interfaces/**'
+  - 'third_party/nanopb-*/**'
+  - 'third_party/qrcodegen-*/**'
+  - 'tools/docker/ceedling/**'
+  - 'tools/version/**'
+  - 'VERSION'
+
+app:
+  - 'app/**'
+  - 'interfaces/proto/**'
+  - 'interfaces/enums/**'
+  - 'interfaces/params/**'
+  - 'interfaces/vectors/**'
+  - 'tools/simulators/cgw_sim/**'
+  - 'VERSION'
+
+python:
+  - '**/*.py'
+  - '**/pyproject.toml'
+  - 'uv.lock'
+  - '.python-version'
+  - 'hil/**'
+  - 'tools/**'
+
+codegen:
+  - 'interfaces/**'
+  - 'tools/codegen/**'
+  - '**/gen/**'
+  - 'third_party/nanopb-*/**'
+  - 'uv.lock'
+
+powershell:
+  - '**/*.ps1'
+  - '**/*.psm1'
+  - '**/*.psd1'
+
+docs:
+  - 'docs/**'
+  - '**/*.md'
+  - '.markdownlint-cli2.yaml'
+  - 'interfaces/**'
+  - 'tools/trace/**'
+  - 'firmware/**'
+  - 'libs/**'
+  - 'app/lib/**'
+  - 'app/test/**'
+  - 'hil/**'

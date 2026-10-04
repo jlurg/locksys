@@ -1,0 +1,29 @@
+net,function,dcu_pin,peripheral,module,access_point,direction,notes
+WIN_PWM,Window PWM,PC7,TIM3_CH2 (full remap) 20 kHz,VNH5019 shield M1PWM,Top D9 socket,DCU out,
+WIN_INA,Window INA,PA10,GPIO,VNH5019 shield M1INA,Top D2 socket,DCU out,
+WIN_INB,Window INB,PB5,GPIO,VNH5019 shield M1INB,Top D4 socket,DCU out,
+WIN_EN_DIAG,Window EN/DIAG,PB10,GPIO input,VNH5019 shield M1EN/DIAG,Top D6 socket,DCU in,Never driven high
+WIN_CS,Window current sense,PA0,ADC12_IN0,VNH5019 shield M1CS,Top A0 socket,DCU in,Regular conversions only (ES096 2.5.1)
+LOCK_PWM,Lock PWM,PB6,TIM4_CH1,VNH5019 shield M2PWM,Top D10 socket,DCU out,
+LOCK_INA,Lock INA,PA8,GPIO,VNH5019 shield M2INA,Top D7 socket,DCU out,
+LOCK_INB,Lock INB,PA9,GPIO,VNH5019 shield M2INB,Top D8 socket,DCU out,
+LOCK_EN_DIAG,Lock EN/DIAG,PB4 (option B) or PA6 (option A),GPIO input,VNH5019 shield M2EN/DIAG,Top D5 socket by jumper after cutting the shield D12 trace (B) or shield D12 (A),DCU in,Option B recommended; decided at BU-02
+LOCK_CS,Lock current sense,PA1,ADC12_IN1,VNH5019 shield M2CS,Top A1 socket,DCU in,
+ENC_A,Encoder A,PA15,TIM2_CH1 (remap 01),JGB37-520 encoder A,Morpho CN7-17,DCU in,Encoder at 3.3 V
+ENC_B,Encoder B,PB3,TIM2_CH2 (remap 01),JGB37-520 encoder B,Top D3 socket,DCU in,Encoder at 3.3 V
+CAN_RX,CAN RX,PA11,bxCAN,Waveshare SN65HVD230 RX,Morpho CN10-14,DCU in,
+CAN_TX,CAN TX,PA12,bxCAN,Waveshare SN65HVD230 TX,Morpho CN10-12,DCU out,
+I2C_SCL,I2C1 SCL,PB8,I2C1 remap,Adafruit TMP117 #4821 SCL (STEMMA QT #4209),Top SCL socket (D15),bidirectional,
+I2C_SDA,I2C1 SDA,PB9,I2C1 remap,Adafruit TMP117 #4821 SDA (STEMMA QT #4209),Top SDA socket (D14),bidirectional,
+UART_TX,VCP TX,PA2,USART2,ST-LINK VCP,On board,DCU out,115200 8N1
+UART_RX,VCP RX,PA3,USART2,ST-LINK VCP,On board,DCU in,DEV and HIL builds only
+LOCK_POS,Lock position switch,PB12,GPIO input pull-up,Lock actuator position switch,Morpho CN10-16 (GND CN10-20),DCU in,Polled every 5 ms; software debounce
+KL30_SENSE,12 V sense,PA4,ADC12_IN4,0-25 V divider module (1/5),Top A2 socket,DCU in,Optional on the product bench; required on the HIL bench
+DCU_TRACE0,Trace 0,PC0,GPIO,Logic analyser,Top A5 socket,DCU out,DEV and HIL builds
+DCU_TRACE1,Trace 1,PC1,GPIO,Logic analyser,Top A4 socket,DCU out,DEV and HIL builds
+DCU_TRACE2,Trace 2,PC2,GPIO,Logic analyser,Morpho CN7-35,DCU out,DEV and HIL builds
+DCU_TRACE3,Trace 3,PC3,GPIO,Logic analyser,Morpho CN7-37,DCU out,DEV and HIL builds
+LD2,User LED,PA5,GPIO,NUCLEO LD2,On board,DCU out,
+B1,User button,PC13,GPIO,NUCLEO B1,On board,DCU in,
+SWDIO,SWD,PA13,SWD,ST-LINK,On board,bidirectional,
+SWCLK,SWD,PA14,SWD,ST-LINK,On board,DCU in,

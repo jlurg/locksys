@@ -1,0 +1,6 @@
+{
+  "LS_ENV": "real",
+  "LS_CGW_HOST": "192.168.4.1",
+  "LS_CGW_PORT": "80",
+  "LS_LOG_LEVEL": "INFO"
+}

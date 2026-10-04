@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  # Replaces the very_good_analysis list (lists do not merge). The local packages are analysed
+  # in their own directories with their own options and lock files.
+  exclude:
+    - lib/l10n/gen/**
+    - "**/*.g.dart"
+    - build/**
+    - packages/**
+    - android/**
+    - ios/**
+
+linter:
+  rules:
+    # Application code; the packages keep public API documentation mandatory.
+    public_member_api_docs: false

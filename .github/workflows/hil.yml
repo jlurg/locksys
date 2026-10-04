@@ -1,0 +1,193 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# HIL tests on the Lab Host bench runner. Required check: hil-gate (main, from M5).
+# Triggered only by pushes, the schedule and manual dispatch; never by pull requests
+# (tools/ci/check_self_hosted.py, ADR 0004).
+# Suites: push to develop = smoke; push to release/** or hotfix/** = regression;
+# schedule = nightly; dispatch = selected suite (evidence only).
+# Until the HIL framework is complete (M5) every suite runs the smoke marker set, and the
+# bench job is skipped unless the repository variable HIL_BENCH_STATE is 'online'.
+name: hil
+
+on:
+  push:
+    branches: [develop, 'release/**', 'hotfix/**']
+  schedule:
+    - cron: '17 2 * * *'
+      timezone: America/Mexico_City
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: HIL suite
+        type: choice
+        options: [smoke, regression, nightly]
+        default: smoke
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    name: plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    outputs:
+      suite: ${{ steps.plan.outputs.suite }}
+      bench: ${{ steps.plan.outputs.bench }}
+      timeout: ${{ steps.plan.outputs.timeout }}
+    steps:
+      - name: Select suite and check the bench state
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          INPUT_SUITE: ${{ inputs.suite }}
+          BENCH_STATE: ${{ vars.HIL_BENCH_STATE }}
+          REPOSITORY: ${{ github.repository }}
+          ACTOR: ${{ github.triggering_actor }}
+          TRUSTED_ACTORS: ${{ vars.TRUSTED_ACTORS }}
+        run: |
+          case "$EVENT" in
+            workflow_dispatch) suite="$INPUT_SUITE" ;;
+            schedule) suite=nightly ;;
+            push)
+              case "$REF" in
+                refs/heads/release/* | refs/heads/hotfix/*) suite=regression ;;
+                *) suite=smoke ;;
+              esac
+              ;;
+            *) echo "::error::unsupported event $EVENT"; exit 1 ;;
+          esac
+          case "$suite" in
+            smoke) timeout=30 ;;
+            regression | nightly) timeout=240 ;;
+            *) echo "::error::unknown suite '$suite'"; exit 1 ;;
+          esac
+          bench=false
+          if [ "$BENCH_STATE" = online ]; then
+            bench=true
+            if [ "$REPOSITORY" != jlurg/locksys ]; then
+              echo "::error::bench jobs run only in jlurg/locksys"
+              exit 1
+            fi
+            if ! jq -e --arg actor "$ACTOR" 'index($actor) != null' <<<"${TRUSTED_ACTORS:-[]}" > /dev/null; then
+              echo "::error::'$ACTOR' is not a trusted actor. Review the change, then re-run the failed jobs."
+              exit 1
+            fi
+          else
+            echo "::warning::HIL bench state is '${BENCH_STATE:-unset}': bench job skipped"
+          fi
+          {
+            echo "suite=$suite"
+            echo "bench=$bench"
+            echo "timeout=$timeout"
+          } >> "$GITHUB_OUTPUT"
+          echo "suite=$suite bench=$bench"
+
+  hil:
+    name: hil
+    needs: plan
+    if: needs.plan.outputs.bench == 'true'
+    runs-on: [self-hosted, windows, hil]
+    timeout-minutes: ${{ fromJSON(needs.plan.outputs.timeout) }}
+    permissions:
+      contents: read
+    concurrency:
+      group: hil-bench
+      cancel-in-progress: false
+      queue: max
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          clean: true
+      - name: Python environment
+        run: uv sync --locked --all-packages
+      - name: Run the suite
+        env:
+          HIL_SUITE: ${{ needs.plan.outputs.suite }}
+        run: |
+          New-Item -ItemType Directory -Force -Path reports | Out-Null
+          Write-Output "Suite: $env:HIL_SUITE (smoke marker set until M5)"
+          uv run --no-sync pytest hil/tests -m smoke --junitxml=reports/hil-junit.xml
+          if ($LASTEXITCODE -ne 0) { throw "pytest failed with exit code $LASTEXITCODE" }
+      - name: Scan the evidence for secrets
+        id: scan
+        if: always()
+        run: |
+          if (-not (Test-Path -LiteralPath reports)) { return }
+          $markers = 'locksys://pair', '<<LS-SECRET-BEGIN>>', '<<LS-SECRET-END>>'
+          $hits = @(Get-ChildItem -Path reports -Recurse -File |
+            Select-String -SimpleMatch -Pattern $markers -List)
+          if ($hits.Count -gt 0) {
+            $hits | ForEach-Object { Write-Output "::error::secret marker in $($_.Path)" }
+            throw 'evidence contains secret markers; upload blocked'
+          }
+      - name: Upload the evidence
+        if: always() && steps.scan.outcome == 'success'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: hil-${{ needs.plan.outputs.suite }}-${{ github.sha }}
+          path: reports/
+          retention-days: 30
+          if-no-files-found: warn
+          overwrite: true
+
+  notify:
+    name: notify
+    needs: [plan, hil]
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - name: Open or update the HIL failure issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SHA: ${{ github.sha }}
+        run: |
+          title="Nightly HIL run failed"
+          body=$(printf 'Run: %s\nCommit: %s\n' "$RUN_URL" "$SHA")
+          number=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body" --label "type:hil-failure" \
+              || gh issue create --title "$title" --body "$body"
+          fi
+
+  hil-gate:
+    name: hil-gate
+    if: always()
+    needs: [plan, hil]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Evaluate the HIL run
+        env:
+          PLAN: ${{ needs.plan.result }}
+          BENCH: ${{ needs.plan.outputs.bench }}
+          HIL: ${{ needs.hil.result }}
+        run: |
+          echo "plan=$PLAN bench=$BENCH hil=$HIL"
+          if [ "$PLAN" != success ]; then
+            echo "::error::job 'plan' did not succeed"
+            exit 1
+          fi
+          if [ "$BENCH" != true ]; then
+            echo "::warning::HIL bench offline or in maintenance: no HIL evidence for this commit"
+            exit 0
+          fi
+          if [ "$HIL" != success ]; then
+            echo "::error::HIL result: ${HIL}"
+            exit 1
+          fi

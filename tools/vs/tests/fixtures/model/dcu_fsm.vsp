@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Name="dcu_fsm">
+  <Enumeration Name="WindowStopReason">
+    <Literal Name="NONE" Value="0"/>
+    <Literal Name="DIR_MISMATCH" Value="16"/>
+  </Enumeration>
+  <Enumeration Name="NodeMode">
+    <Literal Name="SAFE" Value="4"/>
+  </Enumeration>
+  <Constant Name="kBrakeMs" Value="100"/>
+  <Constant Name="kSettleMs" Value="70"/>
+</Project>

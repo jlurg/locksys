@@ -1,0 +1,221 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Canonical enumerations of LockSys: normative content of LS-SAIC-001 section 6.4.
+#
+# Names and values are identical in the DBC VAL_ tables, the proto (<ENUM_NAME>_<VALUE>), the
+# generated constants (C, Dart, Python) and the UART telemetry. Value 0 is the safe or unknown
+# default. Values are never renumbered; additions append. A receiver treats an unknown value as
+# invalid input, never as a valid command.
+#
+# Fields: bits (CAN signal width; absent for proto-only enumerations), proto (enumeration is
+# part of locksys_app.proto), used_by, values (name, value, optional note from the contract).
+# tools/codegen/check_enums.py cross-checks this file against the DBC VAL_ tables and the proto.
+# Regenerate with: uv run tools/codegen/regen.py
+
+version: 1
+
+enums:
+  NodeMode:
+    bits: 3
+    proto: true
+    used_by: CgwSts_Mode, DcuSts_Mode, proto, UART
+    values:
+      - {name: UNKNOWN, value: 0}
+      - {name: INIT, value: 1}
+      - {name: NORMAL, value: 2}
+      - {name: DEGRADED, value: 3}
+      - {name: SAFE, value: 4}
+      - {name: SERVICE, value: 5, note: LATER}
+  DoorLockState:
+    bits: 3
+    proto: true
+    used_by: DoorSts_LockState, proto, UART
+    values:
+      - {name: UNKNOWN, value: 0}
+      - {name: LOCKED, value: 1}
+      - {name: UNLOCKED, value: 2}
+      - {name: LOCKING, value: 3}
+      - {name: UNLOCKING, value: 4}
+      - {name: FAULT, value: 5, note: feedback implausible or actuation failed}
+  DoorRequest:
+    bits: 2
+    proto: false
+    used_by: DoorCmd_Req
+    values:
+      - {name: NONE, value: 0}
+      - {name: LOCK, value: 1}
+      - {name: UNLOCK, value: 2}
+      - {name: INVALID, value: 3}
+  DoorAction:
+    proto: true
+    used_by: DoorCommand.action
+    values:
+      - {name: NONE, value: 0}
+      - {name: LOCK, value: 1}
+      - {name: UNLOCK, value: 2}
+  WindowRequest:
+    bits: 2
+    proto: false
+    used_by: WinCmd_Req
+    values:
+      - {name: STOP, value: 0}
+      - {name: UP, value: 1, note: closing}
+      - {name: DOWN, value: 2, note: opening}
+      - {name: INVALID, value: 3}
+  WindowDirection:
+    proto: true
+    used_by: WindowMove.direction
+    values:
+      - {name: STOP, value: 0}
+      - {name: UP, value: 1}
+      - {name: DOWN, value: 2}
+  WindowState:
+    bits: 3
+    proto: true
+    used_by: WinSts_State, proto, UART
+    values:
+      - {name: UNKNOWN, value: 0}
+      - {name: STOPPED, value: 1}
+      - {name: MOVING_UP, value: 2}
+      - {name: MOVING_DOWN, value: 3}
+      - {name: FULLY_CLOSED, value: 4, note: "B, D"}
+      - {name: FULLY_OPEN, value: 5, note: "B, D"}
+      - {name: BLOCKED, value: 6}
+      - {name: FAULT, value: 7}
+  WindowStopReason:
+    bits: 5
+    proto: true
+    used_by: WinSts_StopReason, proto
+    values:
+      - {name: NONE, value: 0}
+      - {name: RELEASED, value: 1}
+      - {name: UPPER_LIMIT, value: 2, note: "B, D"}
+      - {name: LOWER_LIMIT, value: 3, note: "B, D"}
+      - {name: HOLD_TIMEOUT, value: 4}
+      - {name: CAN_TIMEOUT, value: 5}
+      - {name: E2E_ERROR, value: 6}
+      - {name: STALL, value: 7}
+      - {name: OVERCURRENT, value: 8}
+      - {name: MAX_RUNTIME, value: 9}
+      - {name: OBSTACLE, value: 10, note: E}
+      - {name: UNDERVOLTAGE, value: 11}
+      - {name: OVERVOLTAGE, value: 12}
+      - {name: OVERTEMP, value: 13}
+      - {name: DRIVER_FAULT, value: 14}
+      - {name: MODE_INHIBIT, value: 15}
+      - {name: DIR_MISMATCH, value: 16}
+  EncoderStatus:
+    bits: 3
+    proto: true
+    used_by: WinMot_EncSts, proto, UART
+    values:
+      - {name: UNKNOWN, value: 0}
+      - {name: OK, value: 1}
+      - {name: NO_MOTION, value: 2}
+      - {name: DIR_MISMATCH, value: 3}
+  TempStatus:
+    bits: 3
+    proto: true
+    used_by: TempSts_Status, proto, UART
+    values:
+      - {name: UNKNOWN, value: 0}
+      - {name: VALID, value: 1}
+      - {name: OUT_OF_RANGE, value: 2}
+      - {name: IMPLAUSIBLE, value: 3}
+      - {name: SENSOR_FAULT, value: 4}
+      - {name: STALE, value: 5}
+  CommandResult:
+    bits: 4
+    proto: true
+    used_by: DoorSts_LastResult, WinSts_WinResult, proto
+    values:
+      - {name: UNSPECIFIED, value: 0}
+      - {name: OK, value: 1}
+      - {name: ACCEPTED, value: 2}
+      - {name: REJECTED_BUSY, value: 3}
+      - {name: REJECTED_MODE, value: 4}
+      - {name: REJECTED_INTERLOCK, value: 5}
+      - {name: REJECTED_RATE_LIMIT, value: 6}
+      - {name: REJECTED_INVALID, value: 7}
+      - {name: FAILED_ACTUATOR, value: 8}
+      - {name: FAILED_TIMEOUT, value: 9}
+      - {name: FAILED_COMM, value: 10}
+      - {name: REJECTED_AUTH, value: 11}
+      - {name: REJECTED_VERSION, value: 12}
+      - {name: REJECTED_LINK_QUALITY, value: 13}
+  CommandKind:
+    proto: true
+    used_by: CommandAck.kind
+    values:
+      - {name: UNSPECIFIED, value: 0}
+      - {name: DOOR, value: 1}
+      - {name: WINDOW, value: 2}
+  FaultSeverity:
+    bits: 2
+    proto: true
+    used_by: DTC catalogue, Notice.severity
+    values:
+      - {name: INFO, value: 0}
+      - {name: WARNING, value: 1}
+      - {name: DEGRADED, value: 2}
+      - {name: CRITICAL, value: 3}
+  AppLinkState:
+    bits: 2
+    proto: false
+    used_by: CgwSts_AppLink
+    values:
+      - {name: NONE, value: 0}
+      - {name: CONNECTED, value: 1}
+      - {name: AUTHENTICATED, value: 2}
+      - {name: PAIRING, value: 3}
+  ResetReason:
+    bits: 3
+    proto: false
+    used_by: CgwSts_ResetReason, DcuSts_ResetReason, UART
+    values:
+      - {name: UNKNOWN, value: 0}
+      - {name: POWER_ON, value: 1}
+      - {name: PIN, value: 2}
+      - {name: SOFTWARE, value: 3}
+      - {name: WATCHDOG, value: 4}
+      - {name: WINDOW_WATCHDOG, value: 5}
+      - {name: LOW_POWER, value: 6}
+      - {name: BROWNOUT, value: 7}
+  BuildType:
+    bits: 2
+    proto: false
+    used_by: CgwVer_BuildType, DcuVer_BuildType, UART
+    values:
+      - {name: DEV, value: 0}
+      - {name: RC, value: 1}
+      - {name: RELEASE, value: 2}
+
+# Input of the enum cross-check: CAN signal -> enumeration (LS-SAIC-001 section 6.4).
+signal_map:
+  WinCmd_Req: WindowRequest
+  DoorCmd_Req: DoorRequest
+  WinSts_State: WindowState
+  WinSts_StopReason: WindowStopReason
+  WinSts_WinResult: CommandResult
+  DoorSts_LastResult: CommandResult
+  WinMot_EncSts: EncoderStatus
+  DoorSts_LockState: DoorLockState
+  TempSts_Status: TempStatus
+  CgwSts_Mode: NodeMode
+  DcuSts_Mode: NodeMode
+  CgwSts_AppLink: AppLinkState
+  CgwSts_ResetReason: ResetReason
+  DcuSts_ResetReason: ResetReason
+  CgwVer_BuildType: BuildType
+  DcuVer_BuildType: BuildType
+
+# Special raw values of numeric signals (not enumerations); also DBC VAL_ entries.
+special_values:
+  WinCmd_PressId: {raw: 0, name: NONE}
+  WinCmd_HoldAge: {raw: 255, name: NONE}
+  WinSts_PosPct: {raw: 255, name: UNKNOWN}
+  WinSts_Current: {raw: 255, name: INVALID}
+  WinMot_Speed: {raw: -32768, name: INVALID}
+  TempSts_Value: {raw: -32768, name: INVALID}
+  DcuSts_Vbat: {raw: 255, name: INVALID}

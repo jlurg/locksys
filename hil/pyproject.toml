@@ -1,0 +1,55 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# LockSys HIL framework (LS-HIL-001 section 9). Member of the uv workspace at the repository
+# root; the lock file is the root uv.lock. The version is read from the repository VERSION file.
+
+[build-system]
+requires = ["hatchling==1.32.4"]
+build-backend = "hatchling.build"
+
+[project]
+name = "locksys-hil"
+dynamic = ["version"]
+description = "LockSys hardware-in-the-loop framework: instruments, protocols, bench services and pytest plugin."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  # CAN and diagnostics (python-can without extras: the PCAN backend needs no Python extra)
+  "python-can==4.6.1",
+  "cantools==44.1.0",
+  "can-isotp==2.0.7",
+  "udsoncan==1.26.1",
+  # Instruments
+  "pyvisa==1.16.2",
+  "pyvisa-py==0.8.1",
+  "logic2-automation==1.0.11",
+  "pyserial==3.5",
+  # APP simulator and DUT adapters (protobuf 6.33.x: logic2-automation and protoc 33.x)
+  "protobuf==6.33.6",
+  "websockets==17.1",
+  "esptool==5.4.0",
+  # Framework
+  "pydantic==2.13.5",
+  "pyyaml==6.0.3",
+  "filelock==4.0.10",
+  "keyring==25.7.0",
+  "pytest==9.1.1",
+]
+
+[project.scripts]
+hil = "locksys_hil.cli:main"
+
+[project.entry-points.pytest11]
+locksys_hil = "locksys_hil.pytest_plugin.plugin"
+
+[tool.hatch.version]
+path = "../VERSION"
+pattern = "^(?P<version>\\S+)\\s*$"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/locksys_hil"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/locksys_hil"]

@@ -1,0 +1,96 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+name: Bug
+description: A defect in firmware, app, tooling, interfaces or documentation.
+title: "Bug: "
+labels: ["type:bug"]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Do not include keys, passphrases, pairing QR content or `locksys://pair` URIs.
+        Vulnerabilities are reported privately (SECURITY.md).
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - DCU firmware
+        - CGW firmware
+        - APP
+        - Shared libraries (libs)
+        - Interfaces (CAN, protocol, telemetry)
+        - HIL framework
+        - Tooling or CI
+        - Documentation
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: System version (VERSION, $LSVER) or commit SHA.
+      placeholder: 0.1.0-dev / 1a2b3c4
+    validations:
+      required: true
+  - type: dropdown
+    id: build-type
+    attributes:
+      label: Build type
+      options:
+        - DEV
+        - RC
+        - RELEASE
+        - Not applicable
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and traces
+      description: UART telemetry, CAN log excerpt, CI run link, logic analyser export (redacted).
+      render: text
+  - type: input
+    id: dtcs
+    attributes:
+      label: DTCs
+      description: Active or stored diagnostic trouble codes, if any.
+      placeholder: B1A52, U1A00
+  - type: dropdown
+    id: safety
+    attributes:
+      label: Safety impact
+      description: Can the defect move the window or the lock unintentionally or prevent a stop?
+      options:
+        - None identified
+        - Possible (analysis needed)
+        - Yes
+    validations:
+      required: true
+  - type: input
+    id: requirements
+    attributes:
+      label: Affected requirements
+      placeholder: SYS-005, SWR-DCU-012

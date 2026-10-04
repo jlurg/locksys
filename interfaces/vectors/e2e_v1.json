@@ -1,0 +1,702 @@
+{
+  "version": 1,
+  "source": "LS-SAIC-001 v0.2 sections 7.2, 7.9 and 7.10",
+  "generator": "tools/codegen/vectors.py: independent Python reference, cantools 44.1.0 packing",
+  "crc": {
+    "name": "CRC-8/SAE-J1850",
+    "width": 8,
+    "poly": 29,
+    "init": 255,
+    "xorout": 255,
+    "refin": false,
+    "refout": false,
+    "check": {
+      "input": "313233343536373839",
+      "crc": 75
+    }
+  },
+  "profile": {
+    "crc_byte": 0,
+    "counter_byte": 1,
+    "counter_mask": 15,
+    "crc_input": "DataID low byte, DataID high byte, frame bytes 1 .. DLC-1",
+    "n_ok_valid": 2,
+    "n_err_invalid": 3
+  },
+  "messages": {
+    "CGW_WinCmd": {
+      "frame_id": 256,
+      "dlc": 4,
+      "mode": "Cyclic",
+      "data_id": 4097,
+      "max_delta": 2,
+      "rx_timeout_ms": 100
+    },
+    "CGW_DoorCmd": {
+      "frame_id": 272,
+      "dlc": 4,
+      "mode": "Event",
+      "data_id": 4098,
+      "max_delta": 0,
+      "rx_timeout_ms": 0
+    },
+    "DCU_WinSts": {
+      "frame_id": 512,
+      "dlc": 8,
+      "mode": "Cyclic",
+      "data_id": 8193,
+      "max_delta": 3,
+      "rx_timeout_ms": 250
+    },
+    "DCU_WinMotion": {
+      "frame_id": 513,
+      "dlc": 8,
+      "mode": "Cyclic",
+      "data_id": 8196,
+      "max_delta": 3,
+      "rx_timeout_ms": 250
+    },
+    "DCU_DoorSts": {
+      "frame_id": 528,
+      "dlc": 8,
+      "mode": "Cyclic",
+      "data_id": 8194,
+      "max_delta": 3,
+      "rx_timeout_ms": 500
+    },
+    "DCU_TempSts": {
+      "frame_id": 544,
+      "dlc": 8,
+      "mode": "Cyclic",
+      "data_id": 8195,
+      "max_delta": 3,
+      "rx_timeout_ms": 3000
+    },
+    "CGW_NodeSts": {
+      "frame_id": 1280,
+      "dlc": 8,
+      "mode": "Cyclic",
+      "data_id": 20481,
+      "max_delta": 3,
+      "rx_timeout_ms": 500
+    },
+    "DCU_NodeSts": {
+      "frame_id": 1296,
+      "dlc": 8,
+      "mode": "Cyclic",
+      "data_id": 20482,
+      "max_delta": 3,
+      "rx_timeout_ms": 500
+    }
+  },
+  "frames": [
+    {
+      "name": "wincmd_up",
+      "message": "CGW_WinCmd",
+      "content": "UP, counter 3, PressId 7, HoldAge 50 ms",
+      "data_id": 4097,
+      "counter": 3,
+      "signals_raw": {
+        "WinCmd_Req": 1,
+        "WinCmd_PressId": 7,
+        "WinCmd_HoldAge": 5
+      },
+      "payload": "00100705",
+      "crc_input": "0110130705",
+      "bytes": "5b130705"
+    },
+    {
+      "name": "wincmd_stop",
+      "message": "CGW_WinCmd",
+      "content": "STOP, counter 4, PressId 7, HoldAge 0",
+      "data_id": 4097,
+      "counter": 4,
+      "signals_raw": {
+        "WinCmd_Req": 0,
+        "WinCmd_PressId": 7,
+        "WinCmd_HoldAge": 0
+      },
+      "payload": "00000700",
+      "crc_input": "0110040700",
+      "bytes": "a0040700"
+    },
+    {
+      "name": "wincmd_startup",
+      "message": "CGW_WinCmd",
+      "content": "CGW start-up: STOP, counter 0, PressId 0, HoldAge raw 255",
+      "data_id": 4097,
+      "counter": 0,
+      "signals_raw": {
+        "WinCmd_Req": 0,
+        "WinCmd_PressId": 0,
+        "WinCmd_HoldAge": 255
+      },
+      "payload": "000000ff",
+      "crc_input": "01100000ff",
+      "bytes": "9b0000ff"
+    },
+    {
+      "name": "doorcmd_lock",
+      "message": "CGW_DoorCmd",
+      "content": "LOCK, counter 0, ReqId 0x2A",
+      "data_id": 4098,
+      "counter": 0,
+      "signals_raw": {
+        "DoorCmd_Req": 1,
+        "DoorCmd_ReqId": 42
+      },
+      "payload": "00102a00",
+      "crc_input": "0210102a00",
+      "bytes": "4e102a00"
+    },
+    {
+      "name": "cgw_nodests_normal",
+      "message": "CGW_NodeSts",
+      "content": "counter 0, NORMAL, CAN matrix 1.0, AUTHENTICATED, 1 client, POWER_ON, 0 DTCs, heap 0 %",
+      "data_id": 20481,
+      "counter": 0,
+      "signals_raw": {
+        "CgwSts_Mode": 2,
+        "CgwSts_ComVerMajor": 1,
+        "CgwSts_ComVerMinor": 0,
+        "CgwSts_AppLink": 2,
+        "CgwSts_WifiClients": 1,
+        "CgwSts_ResetReason": 1
+      },
+      "payload": "0020010601000000",
+      "crc_input": "015020010601000000",
+      "bytes": "0b20010601000000"
+    },
+    {
+      "name": "winsts_moving_up",
+      "message": "DCU_WinSts",
+      "content": "counter 5, MOVING_UP, PosPct 255, StopReason NONE, 0.4 A, PressIdEcho 7, WinResult ACCEPTED",
+      "data_id": 8193,
+      "counter": 5,
+      "signals_raw": {
+        "WinSts_State": 2,
+        "WinSts_PosPct": 255,
+        "WinSts_StopReason": 0,
+        "WinSts_Current": 4,
+        "WinSts_PressIdEcho": 7,
+        "WinSts_WinResult": 2
+      },
+      "payload": "0020ff0004070002",
+      "crc_input": "012025ff0004070002",
+      "bytes": "9a25ff0004070002"
+    },
+    {
+      "name": "winsts_blocked",
+      "message": "DCU_WinSts",
+      "content": "counter 6, BLOCKED, PosPct 255, StopReason STALL, 0.0 A, PressIdEcho 7, FltStall 1, WinResult FAILED_ACTUATOR",
+      "data_id": 8193,
+      "counter": 6,
+      "signals_raw": {
+        "WinSts_State": 6,
+        "WinSts_PosPct": 255,
+        "WinSts_StopReason": 7,
+        "WinSts_Current": 0,
+        "WinSts_PressIdEcho": 7,
+        "WinSts_FltStall": 1,
+        "WinSts_WinResult": 8
+      },
+      "payload": "0060ff0700070108",
+      "crc_input": "012066ff0700070108",
+      "bytes": "7866ff0700070108"
+    },
+    {
+      "name": "winmotion_up",
+      "message": "DCU_WinMotion",
+      "content": "counter 2, EncoderStatus OK, +170.0 rpm, duty 100 %, PosCounts −2640",
+      "data_id": 8196,
+      "counter": 2,
+      "signals_raw": {
+        "WinMot_EncSts": 1,
+        "WinMot_Speed": 1700,
+        "WinMot_DutyPct": 100,
+        "WinMot_PosCounts": -2640
+      },
+      "payload": "0010a40664b0f5ff",
+      "crc_input": "042012a40664b0f5ff",
+      "bytes": "0a12a40664b0f5ff"
+    },
+    {
+      "name": "doorsts_locking",
+      "message": "DCU_DoorSts",
+      "content": "counter 0, LOCKING, LastReqId 0x2A, LastResult ACCEPTED",
+      "data_id": 8194,
+      "counter": 0,
+      "signals_raw": {
+        "DoorSts_LockState": 3,
+        "DoorSts_LastReqId": 42,
+        "DoorSts_LastResult": 2
+      },
+      "payload": "00302a0200000000",
+      "crc_input": "0220302a0200000000",
+      "bytes": "35302a0200000000"
+    },
+    {
+      "name": "tempsts_valid",
+      "message": "DCU_TempSts",
+      "content": "counter 1, VALID, 23.45 °C, SampleSeq 42",
+      "data_id": 8195,
+      "counter": 1,
+      "signals_raw": {
+        "TempSts_Status": 1,
+        "TempSts_Value": 2345,
+        "TempSts_SampleSeq": 42
+      },
+      "payload": "001029092a000000",
+      "crc_input": "03201129092a000000",
+      "bytes": "901129092a000000"
+    },
+    {
+      "name": "dcu_nodests_normal",
+      "message": "DCU_NodeSts",
+      "content": "counter 0, NORMAL, CAN matrix 1.0, 12.0 V, POWER_ON, 0 DTCs, CPU 7 %, no inhibits",
+      "data_id": 20482,
+      "counter": 0,
+      "signals_raw": {
+        "DcuSts_Mode": 2,
+        "DcuSts_ComVerMajor": 1,
+        "DcuSts_Vbat": 120,
+        "DcuSts_ResetReason": 1,
+        "DcuSts_CpuLoadMax": 7
+      },
+      "payload": "0020017801000700",
+      "crc_input": "025020017801000700",
+      "bytes": "fb20017801000700"
+    }
+  ],
+  "rx_sequences": [
+    {
+      "name": "startup_to_valid",
+      "message": "CGW_WinCmd",
+      "description": "The first frame sets the reference; two consecutive OK frames give VALID.",
+      "steps": [
+        {
+          "event": "frame",
+          "bytes": "a6000700",
+          "status": "OK",
+          "state": "INIT",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "29010700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "a5020700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        }
+      ],
+      "counters": {
+        "crc": 0,
+        "sequence": 0,
+        "repeated": 0,
+        "timeout": 0
+      }
+    },
+    {
+      "name": "loss_within_max_delta",
+      "message": "CGW_WinCmd",
+      "description": "One lost frame (delta 2) is OK for CGW_WinCmd (MaxDelta 2); delta 3 resynchronises.",
+      "steps": [
+        {
+          "event": "frame",
+          "bytes": "a6000700",
+          "status": "OK",
+          "state": "INIT",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "29010700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "2a030700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "a3060700",
+          "status": "WRONG_SEQUENCE",
+          "state": "VALID",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "2c070700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "aa080700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        }
+      ],
+      "counters": {
+        "crc": 0,
+        "sequence": 1,
+        "repeated": 0,
+        "timeout": 0
+      }
+    },
+    {
+      "name": "repeated_frame",
+      "message": "CGW_WinCmd",
+      "description": "A repeated counter is discarded and leaves the reference unchanged.",
+      "steps": [
+        {
+          "event": "frame",
+          "bytes": "a0040700",
+          "status": "OK",
+          "state": "INIT",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "2f050700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "2f050700",
+          "status": "REPEATED",
+          "state": "VALID",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "a3060700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        }
+      ],
+      "counters": {
+        "crc": 0,
+        "sequence": 0,
+        "repeated": 1,
+        "timeout": 0
+      }
+    },
+    {
+      "name": "crc_errors_to_invalid",
+      "message": "CGW_WinCmd",
+      "description": "Three consecutive CRC or DLC errors give INVALID; the next frame resynchronises and two consecutive OK frames give VALID again.",
+      "steps": [
+        {
+          "event": "frame",
+          "bytes": "a6000700",
+          "status": "OK",
+          "state": "INIT",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "29010700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "a5020600",
+          "status": "CRC_ERROR",
+          "state": "VALID",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "2a0307",
+          "status": "CRC_ERROR",
+          "state": "VALID",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "a0040600",
+          "status": "CRC_ERROR",
+          "state": "INVALID",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "2f050700",
+          "status": "WRONG_SEQUENCE",
+          "state": "INVALID",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "a3060700",
+          "status": "OK",
+          "state": "INVALID",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "2c070700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        }
+      ],
+      "counters": {
+        "crc": 3,
+        "sequence": 1,
+        "repeated": 0,
+        "timeout": 0
+      }
+    },
+    {
+      "name": "error_while_valid",
+      "message": "CGW_WinCmd",
+      "description": "Fewer than three errors keep VALID; the next OK frame is delivered.",
+      "steps": [
+        {
+          "event": "frame",
+          "bytes": "a6000700",
+          "status": "OK",
+          "state": "INIT",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "29010700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "a5020600",
+          "status": "CRC_ERROR",
+          "state": "VALID",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "a5020700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "2a030700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        }
+      ],
+      "counters": {
+        "crc": 1,
+        "sequence": 0,
+        "repeated": 0,
+        "timeout": 0
+      }
+    },
+    {
+      "name": "timeout_clears_reference",
+      "message": "CGW_WinCmd",
+      "description": "An RX timeout gives INVALID and clears the reference; any counter is then accepted.",
+      "steps": [
+        {
+          "event": "frame",
+          "bytes": "a6000700",
+          "status": "OK",
+          "state": "INIT",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "29010700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "timeout",
+          "state": "INVALID"
+        },
+        {
+          "event": "frame",
+          "bytes": "25090700",
+          "status": "OK",
+          "state": "INVALID",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "a90a0700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        }
+      ],
+      "counters": {
+        "crc": 0,
+        "sequence": 0,
+        "repeated": 0,
+        "timeout": 1
+      }
+    },
+    {
+      "name": "counter_wrap",
+      "message": "CGW_WinCmd",
+      "description": "The alive counter wraps from 15 to 0.",
+      "steps": [
+        {
+          "event": "frame",
+          "bytes": "af0e0700",
+          "status": "OK",
+          "state": "INIT",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "200f0700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "a6000700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "29010700",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        }
+      ],
+      "counters": {
+        "crc": 0,
+        "sequence": 0,
+        "repeated": 0,
+        "timeout": 0
+      }
+    },
+    {
+      "name": "max_delta_3",
+      "message": "DCU_TempSts",
+      "description": "MaxDelta 3: delta 3 is OK, delta 4 is a sequence error.",
+      "steps": [
+        {
+          "event": "frame",
+          "bytes": "cd1029092a000000",
+          "status": "OK",
+          "state": "INIT",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "2a1329092a000000",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "1e1629092a000000",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "a51a29092a000000",
+          "status": "WRONG_SEQUENCE",
+          "state": "VALID",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "f81b29092a000000",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        }
+      ],
+      "counters": {
+        "crc": 0,
+        "sequence": 1,
+        "repeated": 0,
+        "timeout": 0
+      }
+    },
+    {
+      "name": "event_mode",
+      "message": "CGW_DoorCmd",
+      "description": "Event mode: CRC and DLC are checked, the counter is not sequence-checked.",
+      "steps": [
+        {
+          "event": "frame",
+          "bytes": "4e102a00",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "4e102a00",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "c4172a00",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        },
+        {
+          "event": "frame",
+          "bytes": "42182b00",
+          "status": "CRC_ERROR",
+          "state": "VALID",
+          "delivered": false
+        },
+        {
+          "event": "frame",
+          "bytes": "cd192a00",
+          "status": "OK",
+          "state": "VALID",
+          "delivered": true
+        }
+      ],
+      "counters": {
+        "crc": 1,
+        "sequence": 0,
+        "repeated": 0,
+        "timeout": 0
+      }
+    }
+  ]
+}

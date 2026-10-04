@@ -1,0 +1,136 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# IAR build and C-STAT of the DCU on the Lab Host runner. Required check: iar-gate.
+# Triggered only by pushes to repository branches and manual dispatch; never by pull
+# requests (tools/ci/check_self_hosted.py, ADR 0004). The check run of a push attaches to
+# the pushed commit and therefore counts for a pull request with that head commit.
+# A dispatch run produces evidence only and never satisfies iar-gate.
+name: dcu-iar
+
+on:
+  push:
+    branches: ['**', '!main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dcu-iar-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_name != 'develop' && !startsWith(github.ref_name, 'release/') && !startsWith(github.ref_name, 'hotfix/') }}
+
+jobs:
+  changes:
+    name: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      required: ${{ steps.decide.outputs.required }}
+      project: ${{ steps.decide.outputs.project }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Classify changed paths against develop
+        id: filter
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          base: develop
+          filters: .github/filters.yml
+      - name: Decide whether an IAR build is required
+        id: decide
+        env:
+          DCU: ${{ steps.filter.outputs.dcu }}
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref_name }}
+        run: |
+          required=false
+          case "$REF" in
+            develop | release/* | hotfix/*) required=true ;;
+          esac
+          if [ "$DCU" = true ] || [ "$EVENT" = workflow_dispatch ]; then
+            required=true
+          fi
+          project=false
+          if compgen -G 'firmware/dcu/iar/*.ewp' > /dev/null; then
+            project=true
+          fi
+          echo "required=$required" >> "$GITHUB_OUTPUT"
+          echo "project=$project" >> "$GITHUB_OUTPUT"
+          echo "IAR build required: $required; IAR project present: $project"
+
+  trust:
+    name: trust
+    needs: changes
+    if: needs.changes.outputs.required == 'true' && needs.changes.outputs.project == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Repository and triggering actor are trusted
+        env:
+          REPOSITORY: ${{ github.repository }}
+          ACTOR: ${{ github.triggering_actor }}
+          TRUSTED_ACTORS: ${{ vars.TRUSTED_ACTORS }}
+        run: |
+          if [ "$REPOSITORY" != jlurg/locksys ]; then
+            echo "::error::Lab Host builds run only in jlurg/locksys"
+            exit 1
+          fi
+          if ! jq -e --arg actor "$ACTOR" 'index($actor) != null' <<<"${TRUSTED_ACTORS:-[]}" > /dev/null; then
+            echo "::error::'$ACTOR' is not a trusted actor. Review the change, then re-run the failed jobs."
+            exit 1
+          fi
+
+  iar:
+    name: iar
+    needs: [changes, trust]
+    if: needs.changes.outputs.required == 'true' && needs.changes.outputs.project == 'true'
+    # The '$/' self-repository form is not accepted by actionlint 1.7.12; './' resolves to
+    # the caller's commit for reusable workflows.
+    uses: ./.github/workflows/_iar-build.yml # zizmor: ignore[self-repository]
+    with:
+      configs: Debug,Release
+      cstat: true
+      upload-sarif: ${{ github.actor != 'dependabot[bot]' }}
+    permissions:
+      contents: read
+      security-events: write
+
+  iar-gate:
+    name: iar-gate
+    if: always()
+    needs: [changes, trust, iar]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Evaluate the IAR build
+        env:
+          CHANGES: ${{ needs.changes.result }}
+          REQUIRED: ${{ needs.changes.outputs.required }}
+          PROJECT: ${{ needs.changes.outputs.project }}
+          TRUST: ${{ needs.trust.result }}
+          IAR: ${{ needs.iar.result }}
+        run: |
+          echo "changes=$CHANGES required=$REQUIRED project=$PROJECT trust=$TRUST iar=$IAR"
+          if [ "$CHANGES" != success ]; then
+            echo "::error::job 'changes' did not succeed"
+            exit 1
+          fi
+          if [ "$REQUIRED" != true ]; then
+            echo "No DCU-relevant change: IAR build not required"
+            exit 0
+          fi
+          if [ "$PROJECT" != true ]; then
+            echo "::warning::firmware/dcu/iar/*.ewp is not present yet: IAR build not run"
+            exit 0
+          fi
+          if [ "$IAR" != success ]; then
+            echo "::error::IAR build required, result: ${IAR}"
+            exit 1
+          fi

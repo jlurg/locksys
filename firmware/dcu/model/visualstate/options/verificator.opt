@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2026 jlurg
+//
+// Verificator options (LS-DCU-GDE-001 section 8). Used as
+//   Verificator.exe dcu_fsm.vsp <System> --@options/verificator.opt
+// by firmware/dcu/scripts/vs/Invoke-VsVerify.ps1 for WinCtrl, DoorCtrl and ModeMgr.
+// Pass criteria: zero critical findings (conflicting transitions, ambiguous assignments,
+// signal queue size); no dead ends except the terminal state Safe of ModeMgr; no unused
+// events, variables, constants or actions. Option spellings are confirmed against the option
+// list printed by Verificator.exe (Lab Host check D9).
+
+// Full verification: critical and non-critical checks
+-full

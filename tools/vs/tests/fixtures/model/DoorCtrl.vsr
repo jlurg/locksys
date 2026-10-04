@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<System Name="DoorCtrl">
+  <Event Name="evDoorReq"/>
+  <Constant Name="kPulseGuardMs" Value="600"/>
+</System>

@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# MISRA C deviation register (LS-PRC-005).
+# Process and field definitions: docs/08_process/misra/deviation_process.md
+#
+# The C-STAT gate cross-checks this register against in-code suppressions and
+# the path-scoped permits in the C-STAT configuration. IDs are never reused;
+# rejected and retired records stay in the register.
+#
+# Record schema:
+#   - id: DEV-DCU-001            # DEV-DCU-nnn | DEV-LIB-nnn | DEV-CGW-nnn | DP-nn
+#     kind: deviation            # deviation | permit
+#     guideline: "MISRA C:2012 Rule 11.4"   # or "CERT C <rule>" or "Project rule: <rule>"
+#     category: advisory         # required | advisory | project (mandatory is never deviated)
+#     cstat_tag: MISRAC2012-Rule-11.4       # string or list; glob patterns allowed; omitted
+#                                           # for CGW records and project rules
+#     scope:
+#       paths:                   # path patterns relative to the repository root
+#         - firmware/dcu/src/mcal/**
+#       symbols: []              # optional
+#     rationale: "<why the guideline cannot be followed>"
+#     risk: "<consequence of the violation>"
+#     mitigation: "<how the risk is controlled>"
+#     verification: "<how the mitigation is verified>"
+#     approved_by: jlurg
+#     date: YYYY-MM-DD           # date of the last status change
+#     status: proposed           # proposed | approved | rejected | retired
+#     references: []             # optional: issues, ADRs, requirement IDs
+
+schema_version: 1
+deviations: []

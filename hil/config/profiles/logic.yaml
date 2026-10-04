@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 jlurg
+#
+# Logic-analyser channel maps (LS-HIL-001 section 8.2). Signal names match
+# hil/hardware/wiring/wiring.csv. A test declares one profile; on an 8-channel unit a test whose
+# profile is not wired is reported as skipped.
+sample_rate_hz: 25000000
+threshold_volts: 3.3
+glitch_filter_s: 1.0e-7
+profiles:
+  full_16ch:
+    channels: [SYNC, WIN_INA, WIN_INB, WIN_PWM, LOCK_INA, LOCK_INB, LOCK_PWM, ENC_A,
+               ENC_B, LOCK_POS, CAN_RX, UART_TX, I2C_SCL, I2C_SDA, DCU_TRACE0, CGW_TRACE0]
+  A_window_timing:
+    channels: [SYNC, WIN_INA, WIN_INB, WIN_PWM, ENC_A, ENC_B, CAN_RX, CGW_TRACE0]
+  B_lock_communication:
+    channels: [SYNC, LOCK_INA, LOCK_INB, LOCK_PWM, LOCK_POS, CAN_RX, UART_TX, DCU_TRACE0]
+  C_sensor_diagnostics:
+    channels: [SYNC, I2C_SCL, I2C_SDA, UART_TX, CAN_RX, DCU_TRACE0, WIN_EN_DIAG, LOCK_EN_DIAG]
+  D_reset_glitch:
+    sample_rate_hz: 100000000
+    channels: [SYNC, WIN_INA, WIN_INB, WIN_PWM, LOCK_INA, LOCK_INB, LOCK_PWM, NRST]
+analyzers:
+  CAN_RX: {type: CAN, bit_rate: 500000}
+  UART_TX: {type: Async Serial, bit_rate: 115200, format: 8N1}
+  I2C_SCL: {type: I2C, sda: I2C_SDA}
