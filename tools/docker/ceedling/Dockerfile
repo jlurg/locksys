@@ -6,7 +6,7 @@
 # The base image is pinned by digest; Debian packages come from the trixie release of that
 # image (stable security updates only).
 
-FROM ruby:3.4.11-slim-trixie@sha256:4677fd16f2b54ef534d18b0e34e20a15726b62c203cb996fd70297a058864c60
+FROM ruby:4.0.7-slim-trixie@sha256:db9ddd17cc6ac603f2497d98ac5c88e4118908d6f9a45f2422ebee141f91e485
 
 ARG CEEDLING_VERSION=1.1.9
 ARG GCOVR_VERSION=8.6
