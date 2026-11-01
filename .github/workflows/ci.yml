@@ -118,7 +118,7 @@ jobs:
           persist-credentials: false
       - name: Load the uv pin
         run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: ${{ env.UV }}
           enable-cache: true
@@ -143,7 +143,7 @@ jobs:
           persist-credentials: false
       - name: Load the uv pin
         run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: ${{ env.UV }}
           enable-cache: true
@@ -177,7 +177,7 @@ jobs:
           persist-credentials: false
       - name: Load the uv pin
         run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: ${{ env.UV }}
           enable-cache: true
@@ -196,7 +196,7 @@ jobs:
           persist-credentials: false
       - name: Load the uv pin
         run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: ${{ env.UV }}
           enable-cache: true
@@ -219,7 +219,7 @@ jobs:
           persist-credentials: false
       - name: Load the uv pin
         run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: ${{ env.UV }}
           enable-cache: true
@@ -233,7 +233,7 @@ jobs:
           # Release names of the Arm GNU Toolchain use "Rel" (13.3.Rel1).
           echo "ARM_GCC=$arm_gcc" >> "$GITHUB_ENV"
           echo "ARM_GCC_RELEASE=${arm_gcc/rel/Rel}" >> "$GITHUB_ENV"
-      - uses: carlosperate/arm-none-eabi-gcc-action@98c40e51546516419841748d3210c290df0d2c6c # v1.13.0
+      - uses: carlosperate/arm-none-eabi-gcc-action@49f4db4520f840e77ab1e99b24cfac2c540a21b1 # v1.14.1
         with:
           release: ${{ env.ARM_GCC_RELEASE }}
       - name: Check the installed toolchain
@@ -275,7 +275,7 @@ jobs:
           persist-credentials: false
       - name: Load the uv pin
         run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: ${{ env.UV }}
           enable-cache: true
@@ -304,7 +304,7 @@ jobs:
           persist-credentials: false
       - name: Load the uv pin
         run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: ${{ env.UV }}
           enable-cache: true
@@ -373,7 +373,7 @@ jobs:
           persist-credentials: false
       - name: Load the uv pin
         run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: ${{ env.UV }}
           enable-cache: true
@@ -396,7 +396,7 @@ jobs:
           persist-credentials: false
       - name: Load the uv pin
         run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: ${{ env.UV }}
           enable-cache: true
@@ -517,7 +517,7 @@ jobs:
           persist-credentials: false
       - name: Load the uv pin
         run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: ${{ env.UV }}
           enable-cache: true
@@ -547,7 +547,7 @@ jobs:
           persist-credentials: false
       - name: Load the uv pin
         run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: ${{ env.UV }}
           enable-cache: true
@@ -580,7 +580,7 @@ jobs:
           persist-credentials: false
       - name: Load the uv pin
         run: grep -E '^UV=' tools/versions.env >> "$GITHUB_ENV"
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: ${{ env.UV }}
           enable-cache: true
