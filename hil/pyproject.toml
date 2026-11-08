@@ -33,7 +33,7 @@ dependencies = [
   # Framework
   "pydantic==2.13.5",
   "pyyaml==6.0.3",
-  "filelock==4.0.10",
+  "filelock==4.2.1",
   "keyring==25.7.0",
   "pytest==9.1.1",
 ]
